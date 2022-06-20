@@ -2,3 +2,8 @@ Ghost
 Earth
 Fire
 Water
+Electric?
+Plant?
+Air
+
+Don't know all the new ones.
