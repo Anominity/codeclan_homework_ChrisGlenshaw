@@ -1,0 +1,4 @@
+"0","calorie_difference <- mutate(calorie_content,"
+"0","       calorie_dif = Calories - 135)"
+"0",""
+"0","calorie_difference"

@@ -1,0 +1,2 @@
+"0",""
+"0","summarise(category_grouped, mean(Calories))"

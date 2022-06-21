@@ -1,5 +1,4 @@
-"0","library(tidyverse)
-"
+"0","library(tidyverse)"
 "2","Registered S3 methods overwritten by 'dbplyr':
   method         from
   print.tbl_lazy     

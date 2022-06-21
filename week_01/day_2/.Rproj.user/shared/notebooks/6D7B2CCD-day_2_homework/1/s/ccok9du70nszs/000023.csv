@@ -1,0 +1,4 @@
+"0","category_grouped <- group_by(drinks_content, "
+"0","           Beverage_category)"
+"0",""
+"0","category_grouped"
