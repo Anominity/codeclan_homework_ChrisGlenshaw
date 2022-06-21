@@ -1,0 +1,51 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Question 1
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(CodeClanData)
+```
+
+
+```{r}
+drinks_content
+```
+
+```{r}
+dim(drinks_content)
+```
+
+```{r}
+names(drinks_content)
+```
+
+```{r}
+glimpse(drinks_content)
+```
+
+Question 2
+```{r}
+calorie_content <- select(drinks_content, "Beverage_category", "Beverage", "Beverage_prep", "Calories")
+
+calorie_content
+
+#Unable to get drop.na function to be recognised
+#drop.na(calorie_content)
+
+```
+
+```{r}
+mutate(calorie_content,
+       calorie_dif = Calories - 135)
+```
+
+Question 3
+
