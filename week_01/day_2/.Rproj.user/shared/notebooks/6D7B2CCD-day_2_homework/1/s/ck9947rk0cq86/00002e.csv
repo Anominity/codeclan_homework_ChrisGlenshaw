@@ -1,3 +1,0 @@
-"0","calorie_content <- select(drinks_content, ""Beverage_category"", ""Beverage"", ""Beverage_prep"", ""Calories"")"
-"0",""
-"0","calorie_content"

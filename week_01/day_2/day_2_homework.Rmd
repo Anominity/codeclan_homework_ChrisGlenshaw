@@ -34,7 +34,8 @@ glimpse(drinks_content)
 Question 2
 ```{r}
 calorie_content <- select(drinks_content, "Beverage_category", "Beverage", "Beverage_prep", "Calories")
-
+filter(is.na("Calories")) %>%
+  summarise(count_of_missing_calories = n())
 calorie_content
 
 #Unable to get drop.na function to be recognised
@@ -88,11 +89,19 @@ average_calories <- pull(summarise(drinks_content, mean(Calories)))
 average_calories
 
 filter(prep_group_mean_calories, 
-       ("mean(Calories)" >= average_calories) == TRUE)
+       (mean_cals >= average_calories) == TRUE)
+
+
+#filter(prep_group_mean_calories, 
+#       (`mean(Calories)` >= average_calories) == TRUE)
 
 ```
 Not sure why this won't work
 
 Question 7
 
-Solo Espresso
+```{r}
+filter(drinks_content, 
+       c("Beverage_category", "Beverage", "Beverage_prep"))
+```
+
