@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Question 1
+
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(CodeClanData)
+```
+
+
+```{r}
+drinks_content
+```
+
+```{r}
+dim(drinks_content)
+```
+
+```{r}
+names(drinks_content)
+```
+
+```{r}
+glimpse(drinks_content)
+```
+
+Question 2
+```{r}
+calorie_content <- select(drinks_content, "Beverage_category", "Beverage", "Beverage_prep", "Calories")
+
+calorie_content
+
+#Unable to get drop.na function to be recognised
+#drop.na(calorie_content)
+
+```
+
+Question 3
+
+```{r}
+calorie_difference <- mutate(calorie_content,
+       calorie_dif = Calories - 135)
+
+calorie_difference
+```
+
+Question 4
+
+```{r}
+category_grouped <- group_by(drinks_content, 
+           Beverage_category)
+
+category_grouped
+
+summarise(category_grouped, mean(Calories))
+
+
+```
+
+Standard Coffee drinks have by far the fewest calories, followed by Shaken Iced Beverages. Classic Frappuccino Blended Coffee & Smoothies have a very large number of calories.
+
+Question 5
+
+```{r}
+prep_grouped <- group_by(drinks_content, 
+                         Beverage_prep)
+
+prep_grouped
+
+prep_group_mean_calories <- summarise(prep_grouped, 
+          mean(Calories))
+
+prep_group_mean_calories
+```
+
+Question 6
+
+```{r}
+average_calories <- pull(summarise(drinks_content, mean(Calories)))
+
+average_calories
+
+filter(prep_group_mean_calories, 
+       ("mean(Calories)" >= average_calories) == TRUE)
+
+```
+Not sure why this won't work
+
+Question 7
+
+Solo Espresso
