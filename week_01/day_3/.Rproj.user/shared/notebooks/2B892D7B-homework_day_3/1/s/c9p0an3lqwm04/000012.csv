@@ -1,0 +1,3 @@
+"0","movies_selected <- select(movie_details, 'title', 'runtime', 'budget')"
+"0",""
+"0","movies_selected"

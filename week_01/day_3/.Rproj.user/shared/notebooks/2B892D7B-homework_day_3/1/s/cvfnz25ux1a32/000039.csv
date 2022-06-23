@@ -1,0 +1,9 @@
+"0","runtime_median <- median(movies_runtime$runtime, na.rm = TRUE)
+
+movies_runtime %>% 
+  mutate(runtime = coalesce(runtime, runtime_median)) %>% 
+  arrange(runtime)
+"
+"0",""
+"0","movies_runtime %>% "
+"0","  count(is.na(runtime))"
