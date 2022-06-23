@@ -62,8 +62,8 @@ movies_runtime <- movies_selected %>%
   
 movies_runtime
 
-movies_runtime %>% 
-  count(is.na(runtime))
+# movies_runtime %>% 
+#   count(is.na(runtime))
 ```
 
 
@@ -79,7 +79,7 @@ movies_imputed <- movies_runtime %>%
                     mutate(runtime = coalesce(runtime, runtime_median)) %>% 
                     arrange(runtime)
 
-movies_runtime %>% 
+movies_imputed %>% 
   count(is.na(runtime))
 
 # Correct answer
@@ -111,7 +111,8 @@ Using the if_else function, impute anything with a budget below $100 with the me
 budget_median <- median(movies_imputed$budget, na.rm = TRUE)
 
 movies_imputed <- movies_runtime %>% 
-                    mutate(budget = if_else(budget < 100, median(budget), budget)) %>% 
+                    mutate(budget = if_else(budget < 100, median(budget), 
+                                            budget)) %>% 
                     arrange(budget)
 
 summarise(movies_imputed, budget)
@@ -150,10 +151,18 @@ movie_budgets
 Take the original dataset with all the variables. Using across and where, summarise the number of missing values, first across all columns of type character, and then across all columns of type numeric.
 ```{r}
 movie_details %>%
-  summarise(across(where(is.numeric), ~sum(is.na(.x))))
+  summarise(
+    across(
+      where(is.numeric), ~sum(is.na(.x))
+      )
+    )
 
 movie_details %>%
-  summarise(across(where(is.character), ~sum(is.na(.x))))
+  summarise(
+    across(
+      where(is.character), ~sum(is.na(.x))
+      )
+    )
 
 ```
 

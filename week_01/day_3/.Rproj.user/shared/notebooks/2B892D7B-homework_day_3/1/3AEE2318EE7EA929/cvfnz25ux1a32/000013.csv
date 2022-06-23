@@ -1,0 +1,8 @@
+"0",""
+"0","# Correct answer"
+"0","#movies_imputed <- movies_runtime %>%  "
+"0","#  mutate(runtime = coalesce(runtime, median(runtime, na.rm = TRUE)))"
+"0",""
+"0","#movies_imputed %>% "
+"0","#  summarise(count = sum(is.na(runtime)))"
+"0",""

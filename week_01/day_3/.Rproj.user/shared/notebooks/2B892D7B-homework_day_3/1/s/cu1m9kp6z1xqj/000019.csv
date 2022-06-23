@@ -1,0 +1,2 @@
+"0","movie_details %>%"
+"0","  summarise(across(where(is.numeric), ~sum(is.na(.x))))"

@@ -1,0 +1,8 @@
+"0","budget_median <- median(movies_imputed$budget, na.rm = TRUE)"
+"0",""
+"0","movies_imputed <- movies_runtime %>% "
+"0","                    mutate(budget = if_else(budget < 100, median(budget),"
+"0","                                            budget)) %>% "
+"0","                    arrange(budget)"
+"0",""
+"0","summarise(movies_imputed, budget)"
