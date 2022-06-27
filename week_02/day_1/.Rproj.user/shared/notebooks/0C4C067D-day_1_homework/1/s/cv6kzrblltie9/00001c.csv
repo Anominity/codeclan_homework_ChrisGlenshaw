@@ -1,0 +1,2 @@
+"0","semi_join(cards, transaction,"
+"0","           by = c(""card_number"" = ""credit_card_id""))"

@@ -1,0 +1,20 @@
+"0","cards <- read_csv('data/CardBase.csv') %>% "
+"0","  clean_names()"
+"1","[1mRows: [22m[34m500[39m [1mColumns: [22m[34m4[39m
+"
+"1","[36m──[39m [1mColumn specification[22m [36m──────────────────────────────────────────────────────[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (3): Card_Number, Card_Family, Cust_ID
+[32mdbl[39m (1): Credit_Limit
+"
+"1","
+[36mℹ[39m Use `spec()` to retrieve the full column specification for this data.
+[36mℹ[39m Specify the column types or set `show_col_types = FALSE` to quiet this message.
+"
+"0","customer <- read.csv('data/CustomerBase.csv') %>% "
+"0","  clean_names()"
+"0","fraud <- read.csv('data/FraudBase.csv') %>% "
+"0","  clean_names()"
+"0","transaction <- read.csv('data/TransactionBase.csv') %>% "
+"0","  clean_names()"
+"0",""

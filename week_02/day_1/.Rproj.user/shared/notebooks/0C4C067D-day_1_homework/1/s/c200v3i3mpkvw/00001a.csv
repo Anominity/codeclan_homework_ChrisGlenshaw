@@ -1,0 +1,3 @@
+"0","fraud_transactions <- full_join(transaction, fraud,"
+"0","          by = c(""transaction_id"" = ""transaction_id""),"
+"0","          keep = TRUE) "
