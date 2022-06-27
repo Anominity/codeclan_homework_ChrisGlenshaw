@@ -1,0 +1,19 @@
+"0","languages_by_pagecount <- books_reduced %>% 
+  group_by(language_code) %>% 
+  summarize(max_pagecount) %>% 
+  arrange(desc(max_pagecount))
+"
+"1","[1m[33mError[39m in [38;5;255m`summarize()`[39m:[22m
+[38;5;255m[33m![38;5;255m Problem while computing `..1 = max_pagecount`.
+[36mℹ[38;5;255m The error occurred in group 1: language_code = ""ale"".[39m
+[1mCaused by error:[22m
+[33m![39m object 'max_pagecount' not found
+Backtrace:
+[90m  1. [39m... %>% arrange(desc(max_pagecount))
+[90m  4. [39m[1mdplyr[22m:::summarise.grouped_df(., max_pagecount)
+[90m  5. [39mdplyr:::summarise_cols(.data, dplyr_quosures(...), caller_env = caller_env())
+[90m  7. [39mdplyr:::map(quosures, summarise_eval_one, mask = mask)
+[90m  8. [39m[1mbase[22m::lapply(.x, .f, ...)
+[90m  9. [39m[1mdplyr[22m FUN(X[[i]], ...)
+[90m 10. [39mmask$eval_all_summarise(quo)
+"

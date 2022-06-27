@@ -1,0 +1,96 @@
+---
+title: "Weekend1 Homework"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+books <- read_csv('data/books.csv')
+
+view(books)
+dim(books)
+names(books)
+
+books_reduced <- books %>% 
+  select(-bookID, -isbn, -isbn13)
+  
+
+  
+books_reduced %>% 
+summarise(count = sum(is.na(average_rating)))
+```
+
+#1 Which 5 books have the highest average rating
+```{r}
+
+
+#Trying to clear out the books with too few ratings, ie less than 25, which
+# give falsely high ratings.
+
+highest_ratings <- books_reduced %>% 
+  filter(ratings_count > 25) %>% 
+  arrange(desc(average_rating)) %>% 
+  slice_head(n = 5)
+  
+```
+
+#2 Which book has the most `text_reviews`
+
+```{r}
+most_reviewed <- books_reduced %>% 
+  arrange(desc(text_reviews_count)) %>%
+  slice_head(n = 1)
+```
+
+3# Which book has the most ratings?
+
+```{r}
+most_ratings <- books_reduced %>%
+  arrange(desc(ratings_count)) %>% 
+  slice_head(n = 1)                 
+```
+
+#4 Which publisher has the highest `average_rating`?
+
+```{r}
+
+#As before, starting by clearing out low rating count ratings.
+
+pub_highest_ratings <- books_reduced %>% 
+  filter(ratings_count > 25) %>% 
+  group_by(publisher) %>%
+  summarize(mean_ratings = mean(average_rating, na.rm = TRUE)) %>% 
+  arrange(desc(mean_ratings)) %>% 
+  slice_head(n = 1)
+
+
+
+# Struggling to come up with a way to merge similar named Publisher using 
+# case_when() or recode() would involve going through the whole data set, is 
+# there a way to merge similar vectors?
+  
+```
+
+#5 How many pages is the longest book for each `language_code`?
+
+```{r}
+
+languages_by_pagecount <- books_reduced %>% 
+  group_by(language_code) %>% 
+  summarize(max_pagecount = head(num_pages)) %>% 
+  arrange(desc(max_pagecount))
+
+
+
+
+```
+
+# What is the highest rated book for each `language_code`?
+
+```{r}
+
+```
+
