@@ -90,7 +90,8 @@ hat_observations_tidy %>%
         sep = ".") %>% 
   filter(hat_type == "beret") %>% 
   group_by(date) %>% 
-  arrange(desc(observation_count))
+  summarise(n_hats = sum(observation_count)) %>%  #This is how its done
+  slice_max(n_hats)
 
 # Answer is 18.06.2018, but I have noted that there are two observations for this date, so would like to add them together, but am unsure of how to add this extra bit
 ```

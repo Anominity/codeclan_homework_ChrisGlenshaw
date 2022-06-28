@@ -1,0 +1,30 @@
+"0","exam_scores <- read_csv(""data/exam_scores.csv"")"
+"1","[1mRows: [22m[34m200[39m [1mColumns: [22m[34m11[39m
+"
+"1","[36m──[39m [1mColumn specification[22m [36m─────────────────────────────────────────────────────[39m
+[1mDelimiter:[22m "",""
+[32mdbl[39m (11): id, exam_Q1, exam_Q2, exam_Q3, exam_Q4, exam_Q5, exam_Q6, exam_...
+"
+"1","
+[36mℹ[39m Use `spec()` to retrieve the full column specification for this data.
+[36mℹ[39m Specify the column types or set `show_col_types = FALSE` to quiet this message.
+"
+"0","exam_scores_longer <- exam_scores %>% "
+"0","  pivot_longer(cols = -id,"
+"0","               names_to = ""exam_question"","
+"0","               names_prefix = ""exam_Q"","
+"0","               values_to = ""score"")"
+"0",""
+"0","# Surely this is the best method to remove superfluous info in exam_question."
+"0",""
+"0",""
+"0","exam_scores_longer1 <- exam_scores %>% "
+"0","  pivot_longer(cols = -id,"
+"0","               names_to = ""exam_question"","
+"0","               values_to = ""score"") %>% "
+"0","  separate(col = exam_question,"
+"0","           into = c(""type"", ""exam_question""),"
+"0","           sep = ""_Q"") %>% "
+"0","  select(-type)"
+"0","  "
+"0",""
