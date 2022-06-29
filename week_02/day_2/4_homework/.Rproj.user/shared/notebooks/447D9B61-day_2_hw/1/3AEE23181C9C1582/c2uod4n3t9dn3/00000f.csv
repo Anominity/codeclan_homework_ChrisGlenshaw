@@ -1,0 +1,4 @@
+"0","code_clan_tweets %>% "
+"0","  filter(is_quote == FALSE) %>% "
+"0","  summarise(sum_favorite= sum(favorite_count)) %>% "
+"0","  slice_head(n = 1)"

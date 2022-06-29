@@ -1,0 +1,5 @@
+"0","code_clan_tweets %>% "
+"0","  mutate(media_type = recode(media_type, .missing = ""text"")) %>% "
+"0","  group_by(media_type) %>% "
+"0","  summarise(sum_likes = sum(favorite_count)) %>% "
+"0","  arrange(desc(sum_likes))"
