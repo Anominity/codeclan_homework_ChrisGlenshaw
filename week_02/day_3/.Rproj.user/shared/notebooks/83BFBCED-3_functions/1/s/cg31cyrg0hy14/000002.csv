@@ -1,0 +1,6 @@
+"0","```r
+nchar(NA, allowNA = FALSE, type = \"chars\", x = \"Hello\")
+
+```"
+"1","[1] 5
+"

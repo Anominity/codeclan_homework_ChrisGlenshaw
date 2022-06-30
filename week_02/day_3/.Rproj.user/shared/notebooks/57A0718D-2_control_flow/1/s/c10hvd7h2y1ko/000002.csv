@@ -1,0 +1,11 @@
+"0","```r
+num_rows <- dim(my_matrix)[1]
+num_cols <- dim(my_matrix)[2]
+
+
+for (row_index in 1:num_rows) {
+  for (col_index in 1:num_cols){
+    print(my_matrix[row_index, col_index])
+  }
+}
+```"

@@ -1,0 +1,7 @@
+"0","```r
+# Find out the means of all columns
+colMeans(m)
+
+```"
+"1","[1] 1.5 3.5 5.5
+"

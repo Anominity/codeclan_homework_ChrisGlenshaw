@@ -1,0 +1,12 @@
+"0","```r
+make_ordered_list(animals)
+
+```"
+"1","debugging in: make_ordered_list(animals)
+debug at #1: {
+    str_c(\"Ordered List: \", my_list %>% sort() %>% str_c(collapse = \", \"))
+}
+"
+"0","```r
+Q
+```"

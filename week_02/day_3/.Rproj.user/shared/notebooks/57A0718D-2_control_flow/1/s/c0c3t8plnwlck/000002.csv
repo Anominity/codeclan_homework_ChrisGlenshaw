@@ -1,0 +1,8 @@
+"0","```r
+if (x %% 2 == 0){
+  print(\"'Yes that divides by 2'\")
+}
+
+```"
+"1","[1] \"'Yes that divides by 2'\"
+"

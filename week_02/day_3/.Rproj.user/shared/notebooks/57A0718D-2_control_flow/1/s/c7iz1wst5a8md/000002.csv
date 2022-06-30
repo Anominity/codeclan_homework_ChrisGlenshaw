@@ -1,0 +1,11 @@
+"0","```r
+product_matrix <- matrix(nrow = 5, ncol = 5)
+product_matrix
+```"
+"1","     [,1] [,2] [,3] [,4] [,5]
+[1,]   NA   NA   NA   NA   NA
+[2,]   NA   NA   NA   NA   NA
+[3,]   NA   NA   NA   NA   NA
+[4,]   NA   NA   NA   NA   NA
+[5,]   NA   NA   NA   NA   NA
+"

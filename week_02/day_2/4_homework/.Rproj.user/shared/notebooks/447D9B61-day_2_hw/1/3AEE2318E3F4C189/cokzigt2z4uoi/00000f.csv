@@ -1,6 +1,0 @@
-"0",""
-"0","codeclan_hashtags <- code_clan_info_wstatus %>% "
-"0","  mutate(text = c(str_to_lower(text)), "
-"0","         hashtag_detect = str_detect(text, ""#+[a-z]"")) %>% "
-"0","  filter(hashtag_detect == TRUE)"
-"0","  "

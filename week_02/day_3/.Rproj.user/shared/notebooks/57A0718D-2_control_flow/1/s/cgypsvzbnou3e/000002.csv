@@ -1,0 +1,11 @@
+"0","```r
+weekdays <- c(\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\")
+
+for (number in 1:length(weekdays)) {
+    weekdays[number] <- paste0(weekdays[number], \"s\") 
+} 
+
+weekdays
+```"
+"1","[1] \"Mondays\"    \"Tuesdays\"   \"Wednesdays\" \"Thursdays\"  \"Fridays\"   
+"

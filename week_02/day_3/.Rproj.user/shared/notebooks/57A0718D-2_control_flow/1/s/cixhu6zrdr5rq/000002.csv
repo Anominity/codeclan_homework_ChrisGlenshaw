@@ -1,0 +1,27 @@
+"0","```r
+x <- 10
+y <- 3
+
+if (x > y) {
+  print(\"Start of outer if block\") #Prints
+
+  if (x %% y == 0) {
+    print(\"Inner if block 1\") # Does not print
+  }
+
+  if (y %in% c(1:5)) {
+    print(\"Inner if block 2\") # Prints
+  }
+
+  print(\"End of outer if block\") # Prints
+}
+```"
+"1","[1] \"Start of outer if block\"
+[1] \"Inner if block 2\"
+[1] \"End of outer if block\"
+"
+"0","```r
+print(\"After if statement\") # Prints
+```"
+"1","[1] \"After if statement\"
+"

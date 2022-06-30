@@ -1,0 +1,11 @@
+"0","```r
+x <- 5
+
+if (x %% 2 == 0){
+  print(\"Yes that divides by 2\")
+} else {
+  print(\"No that does not divide by 2\")
+}
+```"
+"1","[1] \"No that does not divide by 2\"
+"

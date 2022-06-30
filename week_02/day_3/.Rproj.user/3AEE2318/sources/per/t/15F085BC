@@ -1,0 +1,27 @@
+{
+    "id": "15F085BC",
+    "path": "~/Desktop/CodeClan/codeclan_work/week_02/day_3/2_control_flow/2_control_flow.Rmd",
+    "project_path": null,
+    "type": "r_markdown",
+    "hash": "3700323156",
+    "contents": "",
+    "dirty": false,
+    "created": 1656531333985.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "chunk_output_type": "inline",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "133,36",
+        "scrollLine": "130"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1656511900,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1656576752142,
+    "read_only": false,
+    "read_only_alternatives": []
+}

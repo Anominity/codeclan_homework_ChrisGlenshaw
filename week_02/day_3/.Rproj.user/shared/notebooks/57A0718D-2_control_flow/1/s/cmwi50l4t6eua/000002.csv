@@ -1,0 +1,14 @@
+"0","```r
+weekdays <- c(\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\")
+
+for (day in weekdays) {
+  phrase <- paste(\"The day is\", day)
+  print(phrase)
+}
+```"
+"1","[1] \"The day is Monday\"
+[1] \"The day is Tuesday\"
+[1] \"The day is Wednesday\"
+[1] \"The day is Thursday\"
+[1] \"The day is Friday\"
+"
