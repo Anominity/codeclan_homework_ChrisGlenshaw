@@ -11,10 +11,10 @@ library(tidyverse)
 
 ```{r}
 short_forecast <- list(
-  Thursday = list(temperature = "19C", chance_rain = "45%", wind_speed = "7mph"),
-  Friday = list(temperature = "17C", chance_rain = "45%", wind_speed = "11mph"),
-  Saturday = list(temperature = "16C", chance_rain = "55%", wind_speed = "14mph")
-  )
+  Thursday = list(temperature = 19, chance_rain = 0.45, wind_speed = 7),
+  Friday = list(temperature = 17, chance_rain = 0.45, wind_speed = 11),
+  Saturday = list(temperature = 16, chance_rain = 0.55, wind_speed = 14)
+)
 ```
 
 ## Question 2
@@ -33,10 +33,10 @@ short_forecast$Thursday$temperature
 ```{r}
 week_1 <- c(19, 18, 17, 17, 17, 17, 18)
 week_2 <- c(18, 19, 20, 20, 20, 20, 20)
-  
+
 fortnight_forecast <- matrix(
   c(week_1, week_2), nrow = 2, ncol = 7, byrow = TRUE
-  )
+)
 ```
 
 ## Question 4
@@ -56,26 +56,42 @@ Write a function that pre-appends "The answer is: " to any character input, whil
 
 ```{r}
 
-x < 10 paste(x)
+# x < 10 paste(x)
 
-#if(x > 10){
-  print(x/10) | (x < 10)
-}
-isNumeric
+# if(x > 10){
+#  print(x/10) | (x < 10)
+# }
+# isNumeric
 output_answer <- function(x){
- if (is.numeric(x)){
-   if (x > 10){
-     x = x/10}
+  if (is.character(x)){
+    if (x > 10){
+      x = x/10}
     paste("The answer is,", x)
- } else {
-   if (is.character(x)){
-     paste("The answer is: ", x)
-   } else {
-     paste("Invalid input")
-   }
-   }
- }
+  } else {
+    if (is.character(x)){
+      paste("The answer is: ", x)
+    } else {
+      paste("Invalid input")
+    }
+  }
+}
 
-output_answer(15)
+# Correct
+
+answer_or_divide <- function(x) {
+  if (is.character(x)) {
+    return(paste("The answer is: ", x))
+  }
+  if (is.numeric(x)) {
+    if (x < 10) {
+      return(x)
+    } else {
+      return(x / 10)
+    }
+  }
+  return("Invalid input")
+}
+
+output_answer(a)
 ```
 
