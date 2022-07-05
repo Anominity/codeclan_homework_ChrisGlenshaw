@@ -30,6 +30,11 @@ SELECT
 FROM employees 
 WHERE country = 'Portugal' OR country = 'Spain';
 
+SELECT 
+  COUNT(id) AS num_employees_Portugal_Spain
+FROM employees
+WHERE country IN ('Portugal', 'Spain')
+
 -- Question 5.
 -- Count the number of pay_details records lacking a local_account_no.
 SELECT *
@@ -60,7 +65,8 @@ ORDER BY last_name NULLS LAST;
 
 
 -- Question 8.
--- Get a table of employees first_name, last_name and country, ordered alphabetically first by country and then by last_name (put any NULLs last).
+-- Get a table of employees first_name, last_name and country, ordered alphabetically first by country and then 
+-- by last_name (put any NULLs last).
 SELECT
 	first_name,
 	last_name,
@@ -179,10 +185,35 @@ WHERE
 	start_date NOTNULL;
 
 
+-- Actual answer
+SELECT
+  first_name,
+  last_name,
+  department,
+  start_date,
+  CONCAT(
+    first_name, ' ', last_name, ' - ', department, ' (joined ', 
+    TO_CHAR(start_date, 'FMMonth'), ' ', TO_CHAR(start_date, 'YYYY'), ')'
+  ) AS badge_label
+FROM employees
+WHERE 
+  first_name IS NOT NULL AND 
+  last_name IS NOT NULL AND 
+  department IS NOT NULL AND
+  start_date IS NOT NULL
+
 
 -- Question 18.
 -- Return the first_name, last_name and salary of all employees together with a new column called 
 -- salary_class with a value 'low' where salary is less than 40,000 and value 'high' where salary is greater 
 -- than or equal to 40,000.
 
-
+SSELECT 
+  first_name, 
+  last_name, 
+  CASE 
+    WHEN salary < 40000 THEN 'low'
+    WHEN salary IS NULL THEN NULL
+    ELSE 'high' 
+  END AS salary_class
+FROM employees
