@@ -258,7 +258,15 @@ convert the top, bottom or both sides of the division to REAL.
 
 SELECT
 	department,
-	CAST(count(grade = 1) AS int) / cast(count(id) AS REAL) AS proportion_grade_1
+	CAST(count(grade = '1') AS int) / cast(count(id) AS REAL) AS proportion_grade_1
+FROM employees 
+GROUP BY department 
+
+--actual answer
+
+SELECT
+	department,
+	sum(cast(grade = '1' AS int)) / cast(count(id) AS REAL) AS proportion_grade_1
 FROM employees 
 GROUP BY department 
 		
