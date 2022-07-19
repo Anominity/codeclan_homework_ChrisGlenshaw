@@ -16,18 +16,8 @@ qb_device_data <- janitor::clean_names(qb_device_data)
 qb_monthly_sales <- janitor::clean_names(qb_monthly_sales)
 
 col_scheme <- c("#E89FE9", "#50434F", "#B6A7B5", "#F9A472", "#BD7040")
-```
 
-
-# Part 1
-## Question 1.
-Take the data in the dataset qb_revenue_breakdown and make a stacked bar chart showing the sources of revenue across the two years in the dataset.
-
-```{r}
-qb_revenue_breakdown %>% 
-  ggplot(aes(x = year,
-             fill = product)) +
-  geom_bar() +
+qikbit_theme <- function() {
   theme(panel.border = element_rect(colour = "#B6A7B5", 
                                 fill = NA, 
                                 linetype = 2),
@@ -41,7 +31,30 @@ qb_revenue_breakdown %>%
     panel.grid.major.y =  element_line(colour = "#B6A7B5", 
                                        linetype = 3, 
                                        size = 0.5),
-    panel.grid.minor.y = element_blank()) +
+    panel.grid.minor.y = element_blank(), 
+    axis.text = element_text(size = 12, 
+                             colour = "#50434f", 
+                             family = "Times New Roman"),
+    axis.title = element_text(size = 12, 
+                              colour = "#50434f", 
+                              family = "Times New Roman"),
+    axis.ticks = element_line(colour = "#50434f"),
+    legend.position = "bottom"
+  )
+}
+```
+
+
+# Part 1
+## Question 1.
+Take the data in the dataset qb_revenue_breakdown and make a stacked bar chart showing the sources of revenue across the two years in the dataset.
+
+```{r}
+qb_revenue_breakdown %>% 
+  ggplot(aes(x = year,
+             fill = product)) +
+  geom_bar() +
+  qikbit_theme() +
   scale_fill_manual(values = col_scheme)
 ```
 
@@ -56,20 +69,7 @@ qb_monthly_sales %>%
              y = amount,
              colour = cashflow)) +
   geom_line() +
-  theme(panel.border = element_rect(colour = "#B6A7B5", 
-                                fill = NA, 
-                                linetype = 2),
-    # color background 2)
-    panel.background = element_rect(fill = "white"),
-    # modify grid 3)
-    panel.grid.major.x = element_line(colour = "#B6A7B5", 
-                                      linetype = 3, 
-                                      size = 0.5),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y =  element_line(colour = "#B6A7B5", 
-                                       linetype = 3, 
-                                       size = 0.5),
-    panel.grid.minor.y = element_blank()) +
+  qikbit_theme() +
   scale_colour_manual(values = col_scheme) 
   
 ```
@@ -88,21 +88,8 @@ qb_monthly_sales %>%
   labs(x = "\nYear", 
        y = "Sales\n",
        title = "Qikbit revenue vs cost\n",
-       fill = " ") +
-  theme(panel.border = element_rect(colour = "#B6A7B5", 
-                                fill = NA, 
-                                linetype = 2),
-    # color background 2)
-    panel.background = element_rect(fill = "white"),
-    # modify grid 3)
-    panel.grid.major.x = element_line(colour = "#B6A7B5", 
-                                      linetype = 3, 
-                                      size = 0.5),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y =  element_line(colour = "#B6A7B5", 
-                                       linetype = 3, 
-                                       size = 0.5),
-    panel.grid.minor.y = element_blank()) +
+       colour = " ") +
+  qikbit_theme() +
   scale_colour_manual(values = col_scheme)
 ```
 
@@ -121,20 +108,7 @@ qb_competitors %>%
        y = "Revenue\n",
        title = "Fitness tracker market share\n",
        fill = "Companies") +
-  theme(panel.border = element_rect(colour = "#B6A7B5", 
-                                fill = NA, 
-                                linetype = 2),
-    # color background 2)
-    panel.background = element_rect(fill = "white"),
-    # modify grid 3)
-    panel.grid.major.x = element_line(colour = "#B6A7B5", 
-                                      linetype = 3, 
-                                      size = 0.5),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y =  element_line(colour = "#B6A7B5", 
-                                       linetype = 3, 
-                                       size = 0.5),
-    panel.grid.minor.y = element_blank()) +
+  qikbit_theme() +
   scale_fill_manual(values = col_scheme)
 
 ```
@@ -155,21 +129,8 @@ qb_competitors %>%
   labs(x = "\nYear", 
        y = "Revenue\n",
        title = "Qikbit revenue vs leading competition\n",
-       fill = "Companies") +
-  theme(panel.border = element_rect(colour = "#B6A7B5", 
-                                fill = NA, 
-                                linetype = 2),
-    # color background 2)
-    panel.background = element_rect(fill = "white"),
-    # modify grid 3)
-    panel.grid.major.x = element_line(colour = "#B6A7B5", 
-                                      linetype = 3, 
-                                      size = 0.5),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y =  element_line(colour = "#B6A7B5", 
-                                       linetype = 3, 
-                                       size = 0.5),
-    panel.grid.minor.y = element_blank()) +
+       colour = "Companies") +
+  qikbit_theme() +
   scale_colour_manual(values = col_scheme)
  
 ```
@@ -198,8 +159,9 @@ cumul_device_data %>%
   scale_colour_manual(values = col_scheme) +
   labs(x = "\nTime", 
        y = "Steps\n",
-       title = "Qikbit vs other leading brands",,
-       fill = "Companies")
+       title = "Qikbit vs other leading brands",
+       fill = "Companies") +
+  qikbit_theme()
 
 ```
 
@@ -216,34 +178,3 @@ Take the plots that you produced in part one and now polish them by:
   There should be faint grid lines.
   Font sizes should be ~12pt although titles should be slightly larger and axis          labels can be slightly smaller.
   All plots should use colours from the following company colour scheme.
-
-```{r}
-qikbit_theme <- function() {
-  theme(panel.border = element_rect(colour = "#B6A7B5", 
-                                fill = NA, 
-                                linetype = 2),
-    # color background 2)
-    panel.background = element_rect(fill = "white"),
-    # modify grid 3)
-    panel.grid.major.x = element_line(colour = "#B6A7B5", 
-                                      linetype = 3, 
-                                      size = 0.5),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.major.y =  element_line(colour = "#B6A7B5", 
-                                       linetype = 3, 
-                                       size = 0.5),
-    panel.grid.minor.y = element_blank()),
-    axis.text = element_text(size = 12, 
-                             colour = "#50434f", 
-                             family = "Times New Roman"),
-    axis.title = element_text(size = 12, 
-                              colour = "#50434f", 
-                              family = "Times New Roman"),
-    axis.ticks = element_line(colour = "#50434f"),
-    legend.position = "bottom"
-  )
-}
-
-
-```
-
