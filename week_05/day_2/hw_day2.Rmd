@@ -28,12 +28,11 @@ What is the distribution of backpack weights that students are carrying? Choose 
 backpacks <- tibble::rownames_to_column(backpack, var = "student")
 
 backpacks %>% 
-  ggplot(aes(year, backpack_weight)) +
-  geom_point() +
-  scale_x_continuous(breaks = 0:7) +
-  labs(x = "Year of School",
-       y = "Backpack Weight")
-  
+  ggplot(aes(backpack_weight)) +
+  geom_histogram(col = "white", bins = 20) +
+  labs(x = "Number of Students",
+       y = "Backpack Weight") +
+  scale_y_continuous(breaks = 1:20)
 
 ```
 

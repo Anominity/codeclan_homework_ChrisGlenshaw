@@ -1,0 +1,58 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(CodeClanData)
+library(shiny)
+
+cattle <- janitor::clean_names(read_csv("data/cattle-registrations-in-scotland-2015-1.csv"))
+
+cattle$birth_month = factor(cattle$birth_month, levels = month.name)
+
+names(cattle)
+
+cattle_choices <- cattle %>% 
+  group_by(breed) %>% 
+  distinct(breed) %>% 
+  pull()
+  
+cattle %>% 
+  distinct(breed_type)
+  
+  
+  
+# ui <- fluidPage(
+#   sidebarLayout(
+#     sidebarPanel(
+#       selectInput("input1", "Select", choices = 1:10),
+#       radioButtons("input2", "Choose", choices = c(LETTERS[1:3])),
+#       actionButton("myButton", "Click to evaluate")
+#     ),
+#     mainPanel(
+#       textOutput("myOutput")
+#     )
+#   )
+# )
+# 
+# server <- function(input, output, session) {
+#   
+#   myText = reactiveVal("")
+#   
+#   observeEvent(input$myButton, {
+#     
+#     myText(paste("You choose", input$input1, "and", input$input2))
+#     
+#   })
+  
+cattle %>% 
+  group_by(breed) %>% 
+  mutate(total_births = sum(number_of_births)) %>% 
+  ungroup() %>% 
+  group_by(breed, total_births, birth_month) %>% 
+  summarise()
+  
+```
+
