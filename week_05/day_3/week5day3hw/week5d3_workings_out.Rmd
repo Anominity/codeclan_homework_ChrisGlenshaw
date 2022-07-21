@@ -8,7 +8,8 @@ library(tidyverse)
 library(CodeClanData)
 library(shiny)
 
-cattle <- janitor::clean_names(read_csv("data/cattle-registrations-in-scotland-2015-1.csv"))
+cattle <- janitor::clean_names(
+  read_csv("data/cattle-registrations-in-scotland-2015-1.csv"))
 
 cattle$birth_month = factor(cattle$birth_month, levels = month.name)
 
@@ -22,7 +23,7 @@ cattle_choices <- cattle %>%
 cattle %>% 
   distinct(breed_type)
   
-  
+
   
 # ui <- fluidPage(
 #   sidebarLayout(
@@ -47,12 +48,22 @@ cattle %>%
 #     
 #   })
   
-cattle %>% 
-  group_by(breed) %>% 
+cattle_full <- cattle %>% 
+  group_by(breed, birth_month) %>% 
   mutate(total_births = sum(number_of_births)) %>% 
   ungroup() %>% 
-  group_by(breed, total_births, birth_month) %>% 
-  summarise()
+  select(-country, -gov_region, -birth_year, -application_type) %>% 
+  group_by(breed, birth_month, breed_type, sex, total_births) %>% 
+  distinct(breed)
   
+```
+
+```{r}
+if(input$radiobutton == 'Dairy'){ 
+  cattle <- cattle %>%
+  filter(breed_type = "Dairy") } 
+    cattle <- cattle %>%
+  filter(breed_type = "Non Dairy")
+  }
 ```
 
