@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+game_sales %>% 
+  head()
+
+
+
+game_sales %>% 
+  filter(genre == "Racing",
+         publisher == "Nintendo",
+         rating == "E") %>% 
+  ggplot() +
+  aes(x = year_of_release, y = critic_score) +
+  geom_point(aes(colour = name),
+             show.legend = "none") +
+  labs(x = "Release Year", y = "Critic Score")
+  
+
+
+game_sales %>% 
+    filter(genre == "Racing",
+         publisher == "Nintendo",
+         rating == "E") %>% 
+  ggplot() +
+  aes(x = year_of_release, y = user_score) +
+  geom_line(aes(colour = sales))
+
+game_sales %>% 
+  distinct(publisher)
+
+game_sales
+
+```
+
