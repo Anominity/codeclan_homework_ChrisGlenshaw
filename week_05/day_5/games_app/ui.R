@@ -30,12 +30,10 @@ ui <- fluidPage(
           ),
           tabPanel(
             title = "Aesthetic Settings",
-            sidebarPanel(
               selectInput(
                 inputId = "shape",
                 label = "Shape of Points",
                 choices = shapes
-            )
             )
           )
         )
