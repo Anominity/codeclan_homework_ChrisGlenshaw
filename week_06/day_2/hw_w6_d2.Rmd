@@ -1,0 +1,142 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+
+# Question 1.
+Load the data, clean_names() and explore it.
+
+```{r}
+
+phones <- read.csv("4_homework/data/20190928-items.csv") %>% 
+  clean_names()
+
+head(phones)
+
+```
+
+
+# Question 2.
+Find the brand with the highest numbers of phones in the dataset.
+
+```{r}
+
+phones %>% 
+  group_by(brand) %>% 
+  summarise(total_phones = n()) %>% 
+  slice_max(total_phones)
+  
+```
+
+
+# Question 3.
+For your top brand, plot the distribution of phone ratings as a probability density, overlaying a fitted normal distribution. Do you think the normal distribution provides a good model of these ratings?
+Hint
+You will need to calculate the mean() and sd() of the ratings to plot the appropriate normal distribution. Alternatively, investigate using the fitdistr() function in the MASS package
+
+```{r}
+samsung_summary <- phones %>% 
+  filter(brand == "Samsung") %>% 
+  summarise(mean = mean(rating),
+            sd = sd(rating)) 
+
+
+
+phones %>% 
+  filter(brand == "Samsung") %>% 
+  ggplot(aes(x = rating)) +
+  geom_histogram(aes(y = ..density..), 
+                 colour = "white",
+                 bins = 30) +
+  stat_function(
+    fun = dnorm,
+    args = list(
+      mean = samsung_summary$mean,
+      sd = samsung_summary$sd
+    ),
+    col = "blue"
+  )
+
+# This appears to be a left skewed normal distribution 
+```
+
+
+# Question 4.
+We can be more quantitative in comparing the distribution of top brand ratings with a normal distribution. You calculated the mean() and sd() of your distribution in an earlier question. Use these values to calculate the proportions of ratings within one-, two- and three standard deviations of the mean. Compare these proportions with those you expect for a normal distribution.
+Hint
+You can use a filter() to get only the ratings within one-, two- and three standard deviations of the mean, and then think about how to calculate what proportion each of these filtered sets make of the total number of ratings. You’ll need to use three separate filter() and summarise() pipes to do this.
+Further hint - code to filter within one SD 
+
+```{r}
+
+mean_ss_rating <- phones %>% 
+  filter(brand == "Samsung") %>% 
+  summarise(mean = mean(rating)) %>% 
+  pull()
+
+sd_ss_rating <- phones %>% 
+  filter(brand == "Samsung") %>% 
+  summarise(sd = sd(rating)) %>% 
+  pull()
+
+ss_within_1sd <- phones %>% 
+  filter(brand == "Samsung",
+         rating > c(mean_ss_rating - sd_ss_rating),
+         rating < c(mean_ss_rating + sd_ss_rating)) %>% 
+  summarise(within_1 = n())
+
+ss_within_2sd <- phones %>% 
+  filter(brand == "Samsung",
+         rating > c(mean_ss_rating - sd_ss_rating * 2),
+         rating < c(mean_ss_rating + sd_ss_rating * 2)) %>% 
+  summarise(within_2 = n())
+
+ss_within_3sd <- phones %>% 
+  filter(brand == "Samsung",
+         rating > c(mean_ss_rating - sd_ss_rating * 3),
+         rating < c(mean_ss_rating + sd_ss_rating * 3)) %>% 
+  summarise(within_3 = n())
+         
+phone_samsung_prob_man <- phones %>%
+  filter(brand == "Samsung") %>% 
+  summarise(probw1 = c(ss_within_1sd$within_1 / n()),
+            probw2 = c(ss_within_2sd$within_2 / n()),
+            probw3 = c(ss_within_3sd$within_3 / n())) 
+
+# Using scale()
+
+phones_samsung_scaled <- phones %>%
+  filter(brand == "Samsung") %>%
+  mutate(z_rating = scale(rating))
+
+phones_samsung_scaled
+
+within_1_sd_scale <- phones_samsung_scaled %>%
+  filter(between(z_rating, left = -1, right = 1)) %>% 
+  summarise(within1 = n())
+
+within_2_sd_scale <- phones_samsung_scaled %>%
+  filter(between(z_rating, left = -2, right = 2)) %>% 
+  summarise(within2 = n())
+
+within_3_sd_scale <- phones_samsung_scaled %>%
+  filter(between(z_rating, left = -3, right = 3)) %>% 
+  summarise(within3 = n())
+
+phone_samsung_prob <- phones_samsung_scaled %>%
+  summarise(probw1 = c(within_1_sd_scale$within1 / n()),
+            probw2 = c(within_2_sd_scale$within2 / n()),
+            probw3 = c(within_3_sd_scale$within3 / n())) 
+
+# This shows that nearly 98% of the phones fall within three standard deviations,
+# which is what we would expect for a normal distribution, with a few outliers.Could
+# also be called a left skewed dataset due to aforementioned outliers
+
+```
+
