@@ -140,3 +140,13 @@ phone_samsung_prob <- phones_samsung_scaled %>%
 
 ```
 
+```{r}
+samsung_phones <- phones %>% 
+  filter(brand == "Samsung")
+
+qqnorm(samsung_phones$rating, pch = 1, frame = FALSE)
+qqline(samsung_phones$rating, col = "steelblue", lwd = 2)
+
+
+```
+
