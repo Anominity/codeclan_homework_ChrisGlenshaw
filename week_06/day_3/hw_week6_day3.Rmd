@@ -1,0 +1,191 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(infer)
+library(fastGraph)
+```
+
+
+# Task 1.
+Load the data again, clean_names(), and re-familiarise yourself with it
+
+```{r}
+
+ames <- read_csv("data/ames.csv") %>% 
+  clean_names()
+```
+
+# Task 2.
+Investigate the distribution of lot_area. Is the distribution roughly normal? If not, what problems do you find?
+
+```{r}
+ames %>% 
+  ggplot() +
+  aes(lot_area) +
+  geom_histogram(bins = 20)
+
+# Very heavy right skew with large outliers
+```
+
+
+# Task 3.
+Compute and visualise a bootstrap sampling distribution for the mean(lot_area) of the sold houses.
+
+```{r}
+sample_ames <- ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 5000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+sample_ames %>% 
+  ggplot() +
+  aes(stat) +
+  geom_histogram(bins = 40)
+```
+
+
+# Task 4.
+Use your bootstrap distribution to calculate a 95%
+
+CI for mean(lot_area), and visualise it on the distribution
+
+```{r}
+ames_ci_95 <- sample_ames %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+sample_ames %>% 
+  visualise(bins = 30) +
+  shade_ci(endpoints = ames_ci_95)
+```
+
+
+
+# Task 5.
+You would like to know the mean(lot_area) of the sold houses with higher confidence. Calculate the 99%
+CI for this variable (you can re-use your bootstrap distribution from above). Is it narrower or broader than the 95%
+
+CI? Does that make sense?
+
+```{r}
+ames_ci_99 <- sample_ames %>% 
+  get_ci(level = 0.99, type = "percentile")
+
+sample_ames %>% 
+  visualise(bins = 30) +
+  shade_ci(endpoints = ames_ci_99)
+
+# broader, yes that makes sense as it needs to have a lower threshold for error, and therfoer needs to cover more outlying data.
+```
+
+
+# Task 6.
+Calculate the point estimate of the mean(lot_area)
+
+```{r}
+
+ames %>% 
+  summarise(mean = mean(lot_area))
+
+sample_ames %>% 
+  summarise(mean = mean(stat))
+
+```
+
+# 2 Extension
+
+
+## Task 1.
+Calculate a point estimate and 95% CI for the proportion of houses in the data built before 1920. Does the number of reps you use matter? [Investigate reps from 200 up to 50000, memory of your laptop permitting]. 
+
+```{r}
+# 200 reps
+
+ex_ames <- ames %>% 
+  filter(year_built < 1920)
+
+ex_ames %>% 
+  summarise(mean_lot = mean(lot_area))
+
+ex_200_sample <- ex_ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 200, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+ex_200_ci_95 <- ex_200_sample %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+ex_200_sample %>% 
+  summarise(mean = mean(stat))
+
+```
+
+```{r}
+# 1000 reps
+
+ex_1000_sample <- ex_ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 1000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+ex_1000_ci_95 <- ex_1000_sample %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+ex_1000_sample %>% 
+  summarise(mean = mean(stat))
+```
+
+```{r}
+# 10000 reps
+
+ex_10000_sample <- ex_ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 10000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+ex_10000_ci_95 <- ex_10000_sample %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+ex_10000_sample %>% 
+  summarise(mean = mean(stat))
+
+```
+
+```{r}
+# 25000 reps
+
+ex_25000_sample <- ex_ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 25000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+ex_25000_ci_95 <- ex_25000_sample %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+ex_25000_sample %>% 
+  summarise(mean = mean(stat))
+
+```
+
+```{r}
+# 50000 reps
+
+ex_50000_sample <- ex_ames %>% 
+  specify(response = lot_area) %>% 
+  generate(reps = 50000, type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+ex_50000_ci_95 <- ex_50000_sample %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+ex_50000_sample %>% 
+  summarise(mean = mean(stat))
+
+
+# I would infer that anything past 10000 reps is not necessary, as our variation from then on is "random"
+```
+
