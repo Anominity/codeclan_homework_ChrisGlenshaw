@@ -186,6 +186,6 @@ ex_50000_sample %>%
   summarise(mean = mean(stat))
 
 
-# I would infer that anything past 10000 reps is not necessary, as our variation from then on is "random"
+# I would infer that anything past 10000 reps is not necessary, as our variation from then on is no longer approaching the mean from our original sample
 ```
 
