@@ -79,7 +79,7 @@ sample_ames %>%
   visualise(bins = 30) +
   shade_ci(endpoints = ames_ci_99)
 
-# broader, yes that makes sense as it needs to have a lower threshold for error, and therfoer needs to cover more outlying data.
+# broader, yes that makes sense as it needs to have a lower threshold for error, and therefor needs to cover more outlying data.
 ```
 
 
