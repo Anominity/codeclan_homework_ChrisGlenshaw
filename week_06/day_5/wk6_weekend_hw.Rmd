@@ -1,0 +1,227 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# loading packages and reading in data
+```{r}
+library(tidyverse)
+library(janitor)
+library(infer)
+
+data(msleep) 
+
+msleep %>% 
+  clean_names()
+
+```
+
+# Part 1
+## **Question 1.**  
+Explore the dataset and familiarise yourself with it.
+
+## Exploring data
+```{r}
+msleep %>% 
+  glimpse()
+
+msleep %>% 
+  head()
+```
+
+## **Question 2.**  
+Jabberwockies sleep for around 7 hours a night, on average. Perform an appropriate statistical test to determine whether the mean `sleep_total` in the sampled population of animal types differs from the typical value for jabberwockies.
+
+H0: Jabberwockies sleep for the same mean time as other animal types
+H1: Jabberwockies sleep for more or less than the mean time of other animals
+
+a: 0.05
+
+```{r}
+
+observed_stat_sleep <- 7
+
+mean_sleep <- msleep %>% 
+  summarise(mean = mean(sleep_total))
+
+null_distribution_jw <- msleep %>% 
+  specify(response = sleep_total) %>% 
+  hypothesize(null = "point",
+              mu = mean_sleep$mean) %>% 
+  generate(reps = 100000, 
+           type = "bootstrap") %>% 
+  calculate(stat = "mean")
+
+null_distribution_jw %>% 
+  visualise(bins =  30) + 
+  shade_p_value(obs_stat = observed_stat_sleep, direction = "both")
+
+p_value_jw <- null_distribution_jw %>% 
+    get_p_value(obs_stat = observed_stat_sleep, direction = "both")
+
+```
+
+With a p_value of 0 and an alpha of 0.05 wecan therefor reject the  Null hypothesis. We can therefore conclude that on average the amount of sleep that Jabberwockies get is significantly different to the mean sleep of other sampled animal types.
+
+## **Question 3.**  
+Perform an appropriate statistical test to determine whether omnivores sleep for significantly longer than herbivores, on average.
+
+H0: Omnivores sleep for the same mean time as herbivores
+H1: Omnivores sleep for more mean time than herbivores
+
+a: 0.05
+
+```{r}
+
+omni_herb_sleep <- msleep %>% 
+  filter(vore == c("omni", "herbi"))
+
+null_distribution_om_vs_herb <- omni_herb_sleep %>% 
+  specify(sleep_total ~ vore) %>% 
+  hypothesise(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("omni", "herbi"))
+
+observed_stat_om_vs_herb <- omni_herb_sleep %>% 
+  specify(sleep_total ~ vore) %>% 
+  calculate(stat = "diff in means", order = c("omni", "herbi"))
+
+null_distribution_om_vs_herb %>% 
+  visualise(bins =  30) + 
+  shade_p_value(obs_stat = observed_stat_om_vs_herb$stat, direction = "right")
+
+p_value_om_herb <- null_distribution_jw %>% 
+    get_p_value(obs_stat = observed_stat_om_vs_herb$stat, direction = "right")
+
+
+```
+With a p_value of 1 and an alpha of 0.05 I can reject the Null hypothesis. We can therefore conclude that on average the amount of sleep that Omnivores get is significantly different to herbvores, 
+
+## **Question 4. **
+Perform an appropriate statistical test to determine whether the proportion of domesticated animal types in the population of animal types is greater than $5\%$.
+
+```{r}
+
+msleep_domesticated <- msleep %>% 
+  mutate(conservation = replace_na(msleep$conservation, "unknown"),
+    is_domesticated = c(conservation == "domesticated"))
+  
+
+observed_stat_domestic <- msleep_domesticated %>% 
+  specify(response = is_domesticated, success = "FALSE") %>% 
+  calculate(stat = "prop")
+
+null_distribution_domestic <- msleep_domesticated %>% 
+  specify(response = is_domesticated, success = "FALSE") %>% 
+  hypothesise(null = "point", p = 0.05) %>% 
+  generate(reps = 10000, type = "draw") %>% 
+  calculate(stat = "prop")
+
+null_distribution_domestic %>% 
+  visualise(30) +
+  shade_p_value(obs_stat = observed_stat_domestic, direction = "right")
+
+p_value_domestic <- null_distribution_domestic %>% 
+  get_p_value(obs_stat = observed_stat_domestic, direction = "right")
+
+```
+
+With a p_value of 0 and an alpha of 0.05 I can reject the Null hypothesis. We can therefore conclude that on average the proportion of domesticated animals is significantly greater than 5% of the total population of animals
+
+
+# Part 2
+
+For the following three business problems write out:
+
+* What kind of test you would use  
+*  $H_0$ and $H_a$ in **both** mathematical notation and in words. 
+* Also state the method you would use to generate the null distribution (bootstrap, permutation or simulation). 
+
+<br>
+
+## **Question 1.**  
+You work for a independent coffee shop. The boss tells you that she thinks that around $40\%$ of people in the town (population $30,000$) know of the coffee shop, but you are skeptical of the estimate. You conduct a random survey of $200$ people in the town, asking if respondents are aware of your coffee shop. You want to use the sample to test the hypothesis that $40\%$ or more of the town's population have heard of the coffee shop. 
+
+$H_0$: 
+
+The proportion of people that are aware of the coffee shop is equal to 40% 
+$$
+p(P) = 0.4
+$$
+
+
+
+$H_a$ 
+The proportion of people that are aware of the coffee shop is greater than 40%
+$$
+p(P) > 0.4
+$$
+
+One sample proportion using a "draw"
+
+## **Question 2.**  
+You work for a website design company and have performed an **A/B test** on the position of a banner on a website promoting a particular item. 
+<br><br>
+<div class='emphasis'>
+**A/B testing** 
+A method comparing two versions of a web page, email, flyer or other marketing device against each other to determine which version performs better. As it is essentially a controlled experiment, the design should try to ensure that the groups experiencing both versions of the marketing device are equivalent and representative of the population.
+</div>
+<br><br>
+You selected five days at random last month and then randomly selected $200$ of each sampled day's users into group $A$ and another $200$ of that day's users into group $B$. Group $A$ continued to be shown the banner at the right hand side of the webpage (its usual position) while group $B$ was shown the banner at the top of the page. You monitored each sampled user's interactions with the website, in particular the 'click through rate' (CTR) on the banner, i.e. what proportion of sampled users clicked on the banner. You want to use the sampled data to test the hypothesis that website users overall are more likely to click on the banner if positioned at the top of the page   
+<br>
+
+$H_0$ 
+The mean number of users that clicked on the banner from group A is equal to the mean number of the users that clicked on the banner from group B 
+$$
+\overline{x}(A) - \overline{x}(B) = 0
+$$
+
+
+$H_a$ 
+The mean number of users that clicked on the banner from group A is less than the mean number of the users that clicked on the banner from group B 
+$$
+\overline{x}(A) - \overline{x}(B) < 0
+$$
+
+
+two sample independent using (Permutation)
+
+## **Question 3.**  
+You work as an analyst for a car manufacturing company - they have specific standards they must meet for standards and regulation purposes. You have been asked to check the quality control of the manufacture of a particular car part. You have been given data on a sample of $200$ parts produced over the period of a week (the sampled parts were pulled at random from the production line and measured: the factory produced a lot more than $200$ parts that week). The specification of the part stipulates a width of $145\textrm{mm}$, and the manufacturing process is said to have 'drifted' if the mean width of parts differs significantly from $145\textrm{mm}$. You want to use the sampled measurements to test whether the process overall has drifted.     
+
+$H_0$ 
+$$
+\overline{x}(parts) = µ(parts)
+$$
+The mean width of the sample of parts is equal to 145mm 
+
+$H_a$ 
+$$
+\overline{x}(parts) ≠ µ(parts)
+$$
+The mean width of the sample of parts is significantly different to 145mm
+
+Two sample paired diff of means. (Permutation)
+
+# Part 3
+
+## **Question 1.**  
+
+**Coffee shop problem**. Significance level: 0.05, calculated $p$-value: 0.07
+
+The p value is greater than the significance level, we are therefore unable to reject the null Hypothesis. Therefore there is not enough evidence to suggest that more than 40% of the population are aware of the coffee shop.
+
+<br>
+
+## **Question 2.**  
+
+**Website company problem**. Significance level: 0.01, $p$-value: 0.006
+
+The p value is less than the significance level. We can therefore reject the Null Hypothesis.  Therefore we can say that significantly more people click on the banner on the top of the webpage than on the bottom.
+<br>
+
+## **Question 3.**  
+
+**Manufacturing company problem**. Significance level: 0.05, $p$-value: 0.55
+
+The p value is greater than the significance level, hence we are unable to reject the null Hypothesis. There is insufficient evidence to suggest that the width of the part  has changed.  I would suggest reducing our margin of error, perhaps to 0.01
