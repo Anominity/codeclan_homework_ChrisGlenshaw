@@ -74,7 +74,7 @@ a: 0.05
 ```{r}
 
 omni_herb_sleep <- msleep %>% 
-  filter(vore == c("omni", "herbi"))
+  filter(vore %in% c("omni", "herbi"))
 
 null_distribution_om_vs_herb <- omni_herb_sleep %>% 
   specify(sleep_total ~ vore) %>% 
