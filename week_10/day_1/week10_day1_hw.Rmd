@@ -1,0 +1,152 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+The file project_management.csv contains data sampled from the recent work schedule of a small construction company. Column estimated_length contains the estimated length of a building job in days, while column actual_length contains the actual recorded length of the job in days.
+
+We are interested in determining the accuracy of the job estimations made by the company using simple linear regression, so we will eventually want to run a simple linear regression using actual_length as the dependent variable, and estimated_length as the independent variable.
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(modelr)
+library(ggfortify)
+library(broom)
+```
+
+
+#    Load the data into a dataframe _project_
+
+```{r}
+project <- read.csv("6_homework/data/project_management.csv") %>% 
+  clean_names()
+```
+
+
+#    Plot the data, taking estimated_length as the independent variable and actual_length as the dependent variable.
+
+```{r}
+project %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point()
+```
+
+
+
+#    Calculate the correlation coefficient of estimated_length and actual_length and interpret the value you obtain.
+
+```{r}
+project %>% 
+  summarise(cor(estimated_length, actual_length))
+
+# With a Pearson Correlation Coefficient of 0.8046597 this implies strong positive correlation between the estimated_length and the actual_length
+```
+
+
+
+#    Perform a simple linear regression using actual_length as the dependent variable, and estimated_length as the independent variable. Save the model object to a variable.
+
+```{r}
+project_model <- lm(formula = actual_length ~ estimated_length, data = project)
+```
+
+
+#    Interpret the regression coefficient of estimated_length (i.e. slope, gradient) you obtain from the model. How do you interpret the r2 value reported by the model?
+
+```{r}
+project_model %>% 
+  glance()
+
+# With an r2 of 0.647 we can say that 64.7% of the variation in actual_length can be predicted from variation in estimated_length
+```
+
+
+#    Is the relationship statistically significant? Remember, to assess this you need to check the p-value of the regression coefficient (or slope/gradient). But you should first check the regression diagnostic plots to see if the p-value will be reliable (don’t worry about any outlier points you see in the diagnostic plots, we’ll return to them in the extension).
+
+```{r}
+project_model %>% 
+  autoplot()
+
+project_model %>% 
+  tidy()
+
+# With a p-value of <0.001 we can say that the relationship is statistically significant
+```
+
+
+#    Return to your plot from earlier, and now label the data points with their row number in the data frame using geom_text() [Hint - you can pass aes(label=1:nrow(project)) to this layer to generate row index labels]
+
+```{r}
+project %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point() +
+  geom_text(aes(label = 1:nrow(project)), colour = "red")
+```
+
+##    Identify by eye any points you think might be outliers and note their labels.
+
+_5_ maybe _18_ , 31
+
+##    Further split your outliers into those you think are ‘influential’ or ‘non-influential’ based on a visual assessment of their leverage.
+
+Influential
+_5_ 
+Non-influential
+_18_
+
+#    Use your model object from earlier and confirm your visual assessment of which points are ‘influential’ or ‘non-influential’ outliers based on Cook’s distance. You can get a useful plot of Cook’s distance by passing argument which = 4 to autoplot(). Or try the base R plot() function for comparison [e.g. plot(model); you can also use par(mfrow = c(2,2)) just before the plot() command to get a nice two-by-two display]!
+
+```{r}
+project_model %>% 
+  autoplot(which = 4)
+```
+
+
+#    Obtain the intercept and regression coefficient of variable estimated_length for a simple linear model fitted to data omitting one of your non-influential outlier points.
+
+```{r}
+w_outlier <- project %>% 
+  summarise(cor(estimated_length, actual_length))
+
+omit_outlier <- project %>% 
+  filter(x != "18") %>% 
+  summarise(cor(estimated_length, actual_length))
+```
+
+
+##        How different are the intercept and coefficient from those obtained above by fitting the full data set? Does this support classifying the omitted point as non-influential?
+
+```{r}
+omit_outlier - w_outlier
+```
+
+
+##        Plot the data points, this regression line and the regression line for the full data set. How different are the lines?
+
+```{r}
+project %>% 
+  filter(x != "18") %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+project %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+#    Repeat the procedure above, but this time omitting one of your influential outliers.
+```{r}
+project %>% 
+  filter(x != "5") %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+project %>% 
+  ggplot(aes(x = estimated_length, y = actual_length)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
