@@ -1,0 +1,139 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r, echo=FALSE}
+library(tidyverse)
+library(janitor)
+library(GGally)
+library(modelr)
+library(broom)
+library(ggfortify)
+library(fastDummies)
+```
+
+
+#    Load the housing_prices.csv data set and undertake an initial exploration of the data. You will find details on the data set on the relevant Kaggle page
+
+```{r}
+housing_prices <- read_csv("4_diamonds_hw/data/housing_prices.csv") %>% 
+  clean_names()
+```
+
+
+#    We expect the total_rooms of houses to be strongly correlated with total_bedrooms. Use ggpairs() to investigate correlations between these two variables.
+
+```{r, message=FALSE, warning=FALSE}
+housing_prices %>% 
+  ggpairs()
+```
+
+
+#    So, we do find significant correlations. Let’s drop total_bedrooms from the dataset, and use only total_rooms going forward.
+
+```{r}
+housing_prices_clean <- housing_prices %>% 
+  select(-total_bedrooms)
+```
+
+#    We are interested in developing a regression model for the median_house_value of a house in terms of the possible predictor variables in the dataset.
+
+##    Use ggpairs() to investigate correlations between median_house_value and the predictors (this may take a while to run, don’t worry, make coffee or something).
+
+```{r,warning=FALSE, message=FALSE}
+housing_prices_clean %>% 
+  ggpairs()
+
+# median_income has a strong correlation and total_rooms has a small positive correlatin, and latitude has a small negative correlation
+```
+
+
+##    Perform further ggplot visualisations of any significant correlations you find.
+
+```{r}
+
+housing_prices %>% 
+  ggplot(aes(median_house_value, median_income)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+housing_prices %>% 
+  ggplot(aes(median_house_value, total_rooms)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+housing_prices %>% 
+  ggplot(aes(median_house_value, latitude)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+
+
+#    Shortly we may try a regression model to fit the categorical predictor ocean_proximity. Investigate the level of ocean_proximity predictors. How many dummy variables do you expect to get from it?
+
+```{r, warning=FALSE, message=FALSE}
+housing_prices_clean %>% 
+  count(ocean_proximity)
+
+housing_prices_dummy %>% 
+  count(ocean_proximity)
+
+housing_prices_clean %>% 
+  select(ocean_proximity) %>% 
+  factor()
+
+housing_prices_dummy <- housing_prices_clean %>%
+  mutate(ocean_proximity = recode(ocean_proximity, "ISLAND" = "NEAR OCEAN")) %>% 
+  fastDummies::dummy_cols(select_columns = "ocean_proximity", 
+                          remove_first_dummy = TRUE, 
+                          remove_selected_columns = TRUE) %>% 
+  clean_names()
+
+
+housing_prices_dummy %>% 
+  select(median_house_value, starts_with("ocean_")) %>% 
+  ggpairs()
+# Expect to get 4 dummy variables or 3 after recoding as island had only 5 objects
+```
+
+
+
+#    Start with simple linear regression. Regress median_house_value on median_income and check the regression diagnostics.
+
+```{r}
+
+lm1 <- lm(median_house_value ~ median_income, housing_prices_clean)
+
+lm1 %>% 
+  autoplot()
+
+lm1 %>% 
+  summary()
+
+
+```
+
+
+#    Add another predictor of your choice. Check your assumptions, diagnostics, and interpret the model.
+
+```{r}
+lm2 <- lm(median_house_value ~ median_income + latitude + ocean_proximity_near_bay , housing_prices_dummy)
+
+lm2 %>% 
+  autoplot()
+
+lm2 %>% 
+  summary()
+
+# With every increase in median income by $10000 we expect to see an increase in median house value of $38646 with all other predictors remaining constant
+
+# With every degree of latitude increase we see a decrease in median house value of $7445 with all other predictors remaining constant
+
+# Being "near the bay" we expect to see a increase in median house value of $58389
+
+# The r2 value tells us that approximately 45% of the variation in median house value can be predicted by the variations in median income, latitude and proximity to ocean  
+
+
+```
+
