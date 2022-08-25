@@ -34,6 +34,11 @@ housing_prices %>%
 ```{r}
 housing_prices_clean <- housing_prices %>% 
   select(-total_bedrooms)
+
+housing_prices %>%
+  group_by(ocean_proximity) %>% 
+  summarise(mean_house_value = mean(median_house_value))
+
 ```
 
 #    We are interested in developing a regression model for the median_house_value of a house in terms of the possible predictor variables in the dataset.
@@ -53,17 +58,17 @@ housing_prices_clean %>%
 ```{r}
 
 housing_prices %>% 
-  ggplot(aes(median_house_value, median_income)) +
+  ggplot(aes(median_income, median_house_value)) +
   geom_point() +
   geom_smooth(method = "lm")
 
 housing_prices %>% 
-  ggplot(aes(median_house_value, total_rooms)) +
+  ggplot(aes(total_rooms, median_house_value)) +
   geom_point() +
   geom_smooth(method = "lm")
 
 housing_prices %>% 
-  ggplot(aes(median_house_value, latitude)) +
+  ggplot(aes(latitude, median_house_value)) +
   geom_point() +
   geom_smooth(method = "lm")
 
@@ -75,13 +80,6 @@ housing_prices %>%
 ```{r, warning=FALSE, message=FALSE}
 housing_prices_clean %>% 
   count(ocean_proximity)
-
-housing_prices_dummy %>% 
-  count(ocean_proximity)
-
-housing_prices_clean %>% 
-  select(ocean_proximity) %>% 
-  factor()
 
 housing_prices_dummy <- housing_prices_clean %>%
   mutate(ocean_proximity = recode(ocean_proximity, "ISLAND" = "NEAR OCEAN")) %>% 

@@ -1,0 +1,218 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+
+library(relaimpo)
+library(tidyverse)
+library(janitor)
+library(modelr)
+library(broom)
+library(GGally)
+library(ggfortify)
+library(skimr)
+
+```
+
+```{r}
+house_prices <- read_csv("3_homework/data/kc_house_data.csv") %>% 
+  clean_names()
+
+house_prices %>% 
+  skim()
+
+house_prices %>% 
+  distinct(yr_renovated)
+
+house_prices_tidy <- house_prices %>% 
+  select(-c(date, id, sqft_basement, zipcode, sqft_living15, sqft_lot15)) %>% 
+  mutate(view = recode(view, 
+                       "0" = "e", "1" = "d", 
+                       "2" = "c", "3" = "b", 
+                       "4" = "a"),
+         condition = recode(condition,
+                            "1" = "e", "2" = "d",
+                            "3" = "c", "4" = "b",
+                            "5" = "a"
+                            ),
+         grade = case_when(
+           grade <= 3  ~ "low",
+           grade <= 10 ~ "normal",
+           grade <= 13 ~ "high",
+           TRUE ~ NA_character_
+           ),
+         waterfront = as.logical(waterfront),
+         is_renovated = if_else(yr_renovated == 0, FALSE, TRUE)) %>% 
+  select(-yr_renovated)
+
+house_prices %>% 
+  group_by(id)
+
+
+
+mod1_price <- lm(price ~ ., 
+                 data = house_prices_tidy)
+
+alias(mod1_price)
+```
+
+# Question 3
+
+```{r, message=FALSE}
+
+house_prices_tidy %>% 
+  select(-c(waterfront, grade, condition, view)) %>% 
+  ggpairs()
+
+house_prices_tidy %>% 
+  select(price, waterfront, grade, condition, view) %>% 
+  ggpairs()
+```
+
+# living space sqft
+```{r}
+house_prices_tidy %>% 
+  ggplot(aes(x = log(sqft_living))) +
+  geom_histogram()
+
+mod1_livingspace <- lm(log(price) ~ sqft_living, 
+                       data = house_prices_tidy)
+
+mod1_livingspace %>% 
+  summary()
+
+mod1_livingspace %>% 
+  autoplot()
+```
+# waterfront
+```{r}
+mod1_waterfront <- lm(log(price) ~ waterfront,
+                      data = house_prices_tidy)
+
+mod1_waterfront %>% 
+  autoplot()
+
+mod1_waterfront %>% 
+  summary()
+```
+
+```{r}
+mod1_bathroom <- lm(log(price) ~ bathrooms,
+               data = house_prices_tidy)
+
+mod1_bathroom %>% 
+  summary()
+```
+
+Settle on mod1_livingspace as champion, best R2, best plots using log, best residuals
+
+```{r}
+
+mod2_bathroom <- lm(log(price) ~ sqft_living + bathrooms,
+                    data = house_prices_tidy)
+
+mod2_bathroom %>% 
+  summary()
+
+mod2_bathroom %>% 
+  autoplot()
+
+anova(mod2_bathroom, mod1_livingspace)
+
+```
+
+```{r}
+
+mod2_bedrooms <- lm(log(price) ~ sqft_living + bedrooms,
+                    data = house_prices_tidy)
+
+mod2_bedrooms %>% 
+  summary()
+
+
+
+```
+
+```{r}
+mod2_bed_bath <- lm(log(price) ~ sqft_living + bedrooms*bathrooms,
+                     data = house_prices_tidy)
+
+mod2_bed_bath %>% 
+  summary()
+
+mod2_bed_bath %>% 
+  autoplot()
+```
+
+```{r, message=FALSE}
+
+house_prices_tidy %>% 
+  select(-c(waterfront, grade, condition, view)) %>% 
+  add_residuals(mod2_bed_bath) %>% 
+  ggpairs()
+
+```
+
+```{r}
+
+mod3_lat <- lm(log(price) ~ sqft_living + bedrooms*bathrooms + lat,
+                house_prices_tidy)
+
+mod3_lat %>% 
+  summary()
+
+
+mod3_lat %>% 
+  autoplot()
+```
+
+```{r}
+
+mod4_grade <- lm(log(price) ~ sqft_living + bedrooms*bathrooms + lat + grade,
+                house_prices_tidy)
+
+mod4_grade %>% 
+  summary()
+
+
+anova(mod3_lat, mod4_grade)
+```
+
+```{r}
+
+mod4_cond <- lm(log(price) ~ sqft_living + bedrooms*bathrooms + lat + condition,
+                house_prices_tidy)
+
+
+mod4_cond %>% 
+  summary()
+
+mod4_cond %>% 
+  autoplot()
+
+anova(mod3_lat, mod4_cond)
+```
+
+```{r}
+
+mod4_renovated <- lm(log(price) ~ sqft_living + bedrooms*bathrooms + lat + is_renovated,
+                house_prices_tidy)
+
+mod4_renovated %>% 
+  summary()
+
+```
+
+```{r}
+
+mod4_waterfront <- lm(log(price) ~ sqft_living + bedrooms*bathrooms + lat + waterfront,
+                house_prices_tidy)
+
+mod4_waterfront %>% 
+  summary()
+
+```
+
