@@ -44,7 +44,7 @@ mod_alias %>%
 
 ```
 
-average_price looks a little right skewed, but not terribly, I think the normal distribution is acceptable
+average_price looks a little right skewed, but not terribly, I think it is acceptably normally distributed 
 
 # Test - Train
 
@@ -66,7 +66,7 @@ avos_train <- slice(avos, -test_index)
 - changing type into a logical categorical field
 - removing unnecessary fields
 - Though total_bags was not picked up by alias, it is just the sum of the other three bags fields.
-- After running through the model profess once, I could not see enough reasonable correlations, so changed the volume of x4* columns into proportions of total volume, this helped
+- After running through the model process once, I could not see enough reasonable correlations, so changed the volume of x4* columns into proportions of total volume, this helped
 
 ```{r}
 
@@ -383,8 +383,7 @@ glmulti_fit <- glmulti(
   plotty = FALSE, # don't plot models as function runs
   report = TRUE, # do produce reports as function runs
   confsetsize = 10, # return best 100 solutions
-  fitfunction = lm
-  # fit using the `lm` function
+  fitfunction = lm  # fit using the `lm` function
 )
 ```
 
@@ -394,6 +393,19 @@ auto_mod_train <- lm(average_price~1+year+total_volume+small_bags+large_bags+x_l
 
 auto_mod_test <- lm(average_price~1+year+total_volume+small_bags+large_bags+x_large_bags+season+is_organic+proportion_x4046+proportion_x4225+proportion_x4770+proportion_other+large_bags:total_volume+x_large_bags:small_bags+is_organic:total_volume+is_organic:small_bags+is_organic:large_bags+is_organic:x_large_bags+is_organic:season+proportion_x4046:total_volume+proportion_x4046:small_bags+proportion_x4046:is_organic+proportion_x4225:total_volume+proportion_x4225:small_bags+proportion_x4225:large_bags+proportion_x4225:is_organic+proportion_x4225:proportion_x4046+proportion_x4770:x_large_bags+proportion_x4770:proportion_x4225+proportion_other:large_bags+proportion_other:season+proportion_other:is_organic+proportion_other:proportion_x4046+proportion_other:proportion_x4225+year:total_volume+year:small_bags+year:large_bags+year:season+year:is_organic+year:proportion_x4225+year:proportion_x4770+year:proportion_other,
               data = avos_test_tidy)
+
+# K fold validation
+auto_model_w_kfold <- train(average_price~1+year+total_volume+small_bags+large_bags+x_large_bags+season+is_organic+proportion_x4046+proportion_x4225+proportion_x4770+proportion_other+large_bags:total_volume+x_large_bags:small_bags+is_organic:total_volume+is_organic:small_bags+is_organic:large_bags+is_organic:x_large_bags+is_organic:season+proportion_x4046:total_volume+proportion_x4046:small_bags+proportion_x4046:is_organic+proportion_x4225:total_volume+proportion_x4225:small_bags+proportion_x4225:large_bags+proportion_x4225:is_organic+proportion_x4225:proportion_x4046+proportion_x4770:x_large_bags+proportion_x4770:proportion_x4225+proportion_other:large_bags+proportion_other:season+proportion_other:is_organic+proportion_other:proportion_x4046+proportion_other:proportion_x4225+year:total_volume+year:small_bags+year:large_bags+year:season+year:is_organic+year:proportion_x4225+year:proportion_x4770+year:proportion_other,
+               data = avos_full_tidy,
+               trControl = cv_10fold,
+               method = "lm")
+
+auto_model_w_kfold$pred
+auto_model_w_kfold$resample
+
+mean(auto_model_w_kfold$resample$RMSE)
+mean(auto_model_w_kfold$resample$Rsquared)
+
 
 auto_mod_train %>% 
   summary()
@@ -410,7 +422,9 @@ auto_mod_train %>%
   glance()
 
 train_model %>% 
-  glance()
+  summary()
+
+
 
 auto_mod_train %>% 
   autoplot()
