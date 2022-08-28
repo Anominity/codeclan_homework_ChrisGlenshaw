@@ -1,0 +1,392 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r, message=FALSE, echo=FALSE}
+library(relaimpo)
+library(tidyverse)
+library(modelr)
+library(janitor)
+library(leaps)
+library(GGally)
+library(caret)
+library(ggfortify)
+library(skimr)
+library(lubridate)
+library(glmulti)
+library(broom)
+```
+
+# Exploration of dataset
+
+```{r}
+
+avos <- read_csv("data/avocado.csv") %>% 
+  clean_names()
+
+avos %>% 
+  skim()
+
+avos %>% 
+  count(type)
+
+avos %>% 
+  ggplot(aes(x = average_price)) +
+  geom_histogram()
+
+mod_alias <- lm(average_price ~ ., 
+                data = avos)
+
+mod_alias %>% 
+  alias()
+
+```
+
+average_price looks a little right skewed, but not terribly, I think the normal distribution is acceptable
+
+# Test - Train
+
+```{r}
+n_data <- nrow(avos)
+
+# make a test index
+test_index <- sample(1:n_data, size = n_data * 0.2)
+
+# use test index to create test & training datasets
+avos_test <- slice(avos, test_index)
+avos_train <- slice(avos, -test_index)
+```
+
+
+
+# Cleaning dataset
+- Using the date field to create a "season" categorical field
+- changing type into a logical categorical field
+- removing unnecessary fields
+- Though total_bags was not picked up by alias, it is just the sum of the other three bags fields.
+- After running through the model profess once, I could not see enough reasonable correlations, so changed the volume of x4* columns into proportions of total volume, this helped
+
+```{r}
+
+avos_train_tidy <- avos_train %>% 
+  mutate(season = case_when(
+    month(date) %in% c("3", "4", "5") ~ "spring",
+    month(date) %in% c("6", "7", "8") ~ "summer",
+    month(date) %in% c("9", "10", "11") ~ "autumn",
+    TRUE ~ "winter"),
+    is_organic = if_else(type == "organic", TRUE, FALSE),
+    year = as.factor(year),
+    proportion_x4046 = round(x4046 / total_volume * 100, 2),
+    proportion_x4225 = round(x4225 / total_volume * 100, 2),
+    proportion_x4770 = round(x4770 / total_volume * 100, 2),
+    proportion_other = round((total_volume - {x4770 + x4225 + x4046}) / total_volume * 100, 2)
+  ) %>% 
+  select(-c(x1, date, total_bags, type, region, x4046, x4225, x4770))
+
+```
+
+# 1 Manual correlation assessment
+
+```{r, message=FALSE}
+
+avos_train_tidy %>% 
+  ggpairs()
+
+```
+Looks like the primary predictor could be is_organic, start here.
+
+```{r}
+
+avo_model1_org <- lm(average_price ~ is_organic,
+                     data = avos_train_tidy)
+
+avo_model1_org %>% 
+  summary()
+
+avo_model1_org %>% 
+  autoplot()
+
+```
+
+Next best looks like it could be x4046, compare to ensure we have chosen the better primary
+
+```{r}
+avo_model1_x4046 <- lm(average_price ~ proportion_x4046,
+                     data = avos_train_tidy)
+
+avo_model1_x4046 %>% 
+  summary()
+
+avo_model1_x4046 %>% 
+  autoplot()
+
+```
+
+primary definitely confirmed to be is_organic, highest r2 by a large margin we'll take that as our "champion"
+
+
+Add the residuals from our chosen champion model and lets look at correlations again.
+```{r, message=FALSE}
+avos_train_tidy %>% 
+  add_residuals(avo_model1_org) %>% 
+  select(-is_organic) %>% 
+  ggpairs()
+
+
+
+```
+
+Not many good options, looks like the best options would be between proportion of x4225 or season or year
+
+Start with proportion of x4225
+
+```{r}
+
+avo_model2_x4225 <- lm(average_price ~ is_organic + proportion_x4225,
+                      data = avos_train_tidy)
+
+avo_model2_x4225 %>% 
+  summary()
+
+avo_model2_x4225 %>% 
+  autoplot()
+
+```
+
+Looking at season next
+```{r}
+
+avo_model2_season <- lm(average_price ~ is_organic + season,
+                      data = avos_train_tidy)
+
+avo_model2_season %>% 
+  summary()
+
+avo_model2_season %>% 
+  autoplot()
+
+```
+and finally year
+
+```{r}
+avo_model2_year <- lm(average_price ~ is_organic + year,
+                      data = avos_train_tidy)
+
+avo_model2_year %>% 
+  summary()
+
+avo_model2_year %>% 
+  autoplot()
+```
+
+
+season beats out the other two by having a higher r2, and a lower residual error
+
+Lets add residuals and compare again
+
+```{r, message=FALSE}
+
+avos_train_tidy %>% 
+  add_residuals(avo_model2_season) %>% 
+  select(-c(is_organic, season)) %>% 
+  ggpairs()
+
+anova(avo_model2_season, avo_model1_org)
+
+```
+ Looks like the next best would be year or proportion of x4225, our graphs are looking a little split up, so I feel we are missing something.
+ 
+```{r}
+
+avo_model3_year <- lm(average_price ~ is_organic + season + year,
+                      data = avos_train_tidy)
+
+avo_model3_year %>% 
+  summary()
+
+avo_model3_year %>% 
+  autoplot()
+
+
+
+```
+ Compare to prop of x4225
+ 
+```{r}
+
+avo_model3_x4225 <- lm(average_price ~ is_organic + season + proportion_x4225,
+                      data = avos_train_tidy)
+
+avo_model3_x4225 %>% 
+  summary()
+
+avo_model3_x4225 %>% 
+  autoplot()
+
+```
+prop x4225 looks good with some decent graphs and a higher r2 and lower residual standard error.
+```{r, message=FALSE}
+
+avos_train_tidy %>% 
+  add_residuals(avo_model3_x4225) %>% 
+  select(-c(is_organic, season, proportion_x4225)) %>% 
+  ggpairs()
+
+anova(avo_model3_x4225, avo_model2_season)
+```
+
+Looks like only maybe year could be useful here, but no others look particularly useful.
+
+```{r}
+
+avo_model4_year <- lm(average_price ~ is_organic + season + proportion_x4225 + year,
+                      data = avos_train_tidy)
+
+avo_model4_year %>% 
+  summary()
+
+avo_model4_year %>% 
+  autoplot()
+
+```
+
+Seeing slight heteroskedasticity in the scale-location graph, and two layers in the Residuals vs Leverage graph, but a good line in Residuals vs fitted. Overall looks pretty good.
+
+Lets add residuals and see if anything has improved.
+```{r, message=FALSE}
+
+avos_train_tidy %>% 
+  add_residuals(avo_model4_year) %>% 
+  select(-c(is_organic, year, season, proportion_x4225)) %>% 
+  ggpairs()
+
+```
+Looks good, lets compare the model over both the train and test data
+
+```{r}
+
+avos_test_tidy <- avos_test %>% 
+  mutate(season = case_when(
+    month(date) %in% c("3", "4", "5") ~ "spring",
+    month(date) %in% c("6", "7", "8") ~ "summer",
+    month(date) %in% c("9", "10", "11") ~ "autumn",
+    TRUE ~ "winter"),
+    is_organic = if_else(type == "organic", TRUE, FALSE),
+    year = as.factor(year),
+    proportion_x4046 = round(x4046 / total_volume * 100, 2),
+    proportion_x4225 = round(x4225 / total_volume * 100, 2),
+    proportion_x4770 = round(x4770 / total_volume * 100, 2),
+    proportion_other = round((total_volume - {x4770 + x4225 + x4046}) / total_volume * 100, 2)
+  ) %>% 
+  select(-c(x1, date, total_bags, type, region, x4046, x4225, x4770))
+
+
+train_model <- lm(average_price ~ is_organic + season + proportion_x4225 + year,
+                      data = avos_train_tidy)
+
+test_model <- lm(average_price ~ is_organic + season + proportion_x4225 + year,
+                      data = avos_test_tidy)
+
+
+train_model %>% 
+  summary()
+test_model %>% 
+  summary()
+
+train_model %>% 
+  glance()
+test_model %>% 
+  glance()
+
+```
+Well, looks like the model works (exceptionally) well on the test dataset, minor change in r2 and significant improvements in AIC and BIC, looks like we got lucky with our Test data.
+
+# K-fold validation
+
+```{r}
+
+avos_full_tidy <- avos %>% 
+  mutate(season = case_when(
+    month(date) %in% c("3", "4", "5") ~ "spring",
+    month(date) %in% c("6", "7", "8") ~ "summer",
+    month(date) %in% c("9", "10", "11") ~ "autumn",
+    TRUE ~ "winter"),
+    is_organic = if_else(type == "organic", TRUE, FALSE),
+    year = as.factor(year),
+    proportion_x4046 = round(x4046 / total_volume * 100, 2),
+    proportion_x4225 = round(x4225 / total_volume * 100, 2),
+    proportion_x4770 = round(x4770 / total_volume * 100, 2),
+    proportion_other = round((total_volume - {x4770 + x4225 + x4046}) / total_volume * 100, 2)
+  ) %>% 
+  select(-c(x1, date, total_bags, type, region, x4046, x4225, x4770))
+
+cv_10fold <- trainControl(method = "cv", 
+                          number = 10,
+                          savePredictions = TRUE)
+
+model_w_kfold <- train(average_price ~ is_organic + season + proportion_x4225 + year,
+               data = avos_full_tidy,
+               trControl = cv_10fold,
+               method = "lm")
+
+model_w_kfold$pred
+model_w_kfold$resample
+
+mean(model_w_kfold$resample$RMSE)
+mean(model_w_kfold$resample$Rsquared)
+
+```
+
+# 2 Automated 
+## leaps
+```{r}
+
+regsubsets_exhaustive <- regsubsets(average_price ~ ., data = avos_train_tidy, nvmax = 8, method = "exhaustive")
+
+sum_regsubsets_exhaustive <- summary(regsubsets_exhaustive)
+sum_regsubsets_exhaustive
+
+
+plot(regsubsets_exhaustive, scale = "adjr2")
+plot(regsubsets_exhaustive, scale = "bic")
+plot(sum_regsubsets_exhaustive$rsq, type = "b")
+
+mod_noyear <- lm(average_price ~ . -year,
+                 data = avos_train_tidy)
+
+mod_w_year <- lm(average_price ~ .,
+                 data = avos_train_tidy)
+
+mod_noyear %>%
+  summary()
+
+mod_w_year %>% 
+  summary()
+
+
+```
+
+## glmulti
+
+```{r}
+glmulti_fit <- glmulti(
+  average_price ~ ., 
+  data = avos_full_tidy,
+  level = 2, # 2 = include pairwise interactions, 1 = main effects only (main effect = no pairwise interactions)
+  minsize = 0, # no min size of model
+  maxsize = -1, # -1 = no max size of model
+  marginality = TRUE, # marginality here means the same as 'strongly hierarchical' interactions, i.e. include pairwise interactions only if both predictors present in the model as main effects.
+  method = "g", # the problem is too large for exhaustive search, so search using a genetic algorithm
+  crit = bic, # criteria for model selection is BIC value (lower is better)
+  plotty = FALSE, # don't plot models as function runs
+  report = TRUE, # do produce reports as function runs
+  confsetsize = 10, # return best 100 solutions
+  fitfunction = lm # fit using the `lm` function
+)
+```
+
+
+
+
