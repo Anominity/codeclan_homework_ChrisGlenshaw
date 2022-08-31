@@ -1,0 +1,264 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r, echo=FALSE}
+
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+library(modelr)
+library(caret)
+library(yardstick)
+library(ranger)
+library(janitor)
+library(GGally)
+library(ggfortify)
+library(splitstackshape)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(corrplot)
+
+```
+
+## Session 1 -- Clustering & Segmentation Intro
+
+### Learning Outcomes
+
+- Know what _segmentation_ is
+- Know what _clustering_ is
+- Know the _differences and similarities_ between segmentation and clustering
+- Understand the different _types_ of clustering algorithms and their _use cases_
+
+"Manual" process of separating individuals
+
+1. Connectivity models
+
+2. Centroid models : K-means 
+
+3. Distribution models
+
+4. Density models
+
+```{r}
+
+edu_data <- read_csv("2_hierarchical_clustering/data/school_data.csv") %>% 
+  clean_names()
+
+```
+
+```{r}
+
+edu_data <- edu_data %>% 
+  column_to_rownames("x1")
+
+edu_data %>% 
+  skimr::skim()
+
+```
+
+```{r}
+
+edu_data_scale <- edu_data %>% 
+  mutate(across(where(is.numeric), scale))
+
+
+```
+
+```{r}
+
+edu_data_scale %>%
+  pivot_longer(cols = everything(),
+               names_to = "type", 
+               values_to = "value") %>% 
+  group_by(type) %>%
+  summarise(mean = round(mean(value)), 
+            sd = sd(value))
+
+```
+
+```{r}
+
+corrplot(cor(edu_data_scale), method = "number", type = "lower")
+
+```
+```{r}
+# dissimilarity matrix
+
+dist_matrix <- edu_data_scale %>% 
+  select(home_school) %>% 
+  get_dist()
+
+dist_matrix
+```
+
+```{r}
+
+fviz_dist(dist_matrix)
+
+```
+
+```{r}
+
+clusters <- dist_matrix %>% 
+  hclust(method = "complete")
+
+clusters %>% 
+  plot(cex = .5, hang = -5)
+
+clustering_dendogram <- clusters %>% 
+  as.dendrogram() %>% 
+  set("labels_cex", 0.5)
+
+clustering_dendogram %>% 
+  plot()
+```
+
+```{r}
+
+alt_clusters <-  dist_matrix %>% 
+  hclust(method = "ward.D2")
+
+alt_clustering_dendogram <- alt_clusters %>% 
+  as.dendrogram() %>% 
+  set("labels_cex", 0.5)
+
+clustering_dendogram %>% 
+  plot()
+
+dend_diff(clustering_dendogram, alt_clustering_dendogram)
+```
+
+```{r}
+
+plot(clusters, cex = .8, hang = -1)
+rect.hclust(clusters, k = 2, border = c(2, 4))
+  
+
+```
+
+```{r}
+
+edu_clustered_h2 <- edu_data %>% 
+  mutate(school_cluster = cutree(clusters, 2))
+
+edu_clustered_h2 %>% 
+  ggplot(aes(home_school, state_school, colour = as.factor(school_cluster))) +
+  geom_point()
+
+```
+
+```{r}
+
+dist_matrix_state_private <- edu_data_scale %>% 
+  select(private_school, state_school) %>% 
+  get_dist()
+
+dist_matrix_state_private
+
+
+state_priv_clusters <-  dist_matrix_state_private %>% 
+  hclust(method = "complete")
+
+state_private_dendo <- state_priv_clusters %>% 
+  as.dendrogram() %>% 
+  set("labels_cex", 0.5)
+
+state_private_dendo %>% 
+  plot()
+
+edu_clustered_priv_pub <- edu_data %>% 
+  mutate(school_cluster = cutree(state_priv_clusters, 5))
+
+
+edu_clustered_priv_pub %>% 
+  ggplot(aes(private_school, state_school, colour = as.factor(school_cluster))) +
+  geom_point()
+
+```
+
+```{r}
+
+dist_matrix_all <- edu_data_scale %>% 
+  get_dist()
+
+dist_matrix_all
+
+
+all_clusters <-  dist_matrix_all %>% 
+  hclust(method = "median")
+
+all_dendo <- all_clusters %>% 
+  as.dendrogram() %>% 
+  set("labels_cex", 0.5)
+
+all_dendo %>% 
+  plot()
+
+edu_clustered_all <- edu_data %>% 
+  mutate(school_cluster = cutree(all_clusters, 2))
+
+
+edu_clustered_all %>% 
+  ggplot(aes(private_school, state_school, colour = as.factor(school_cluster))) +
+  geom_point()
+
+
+```
+
+```{r}
+
+edu_data_prop <- edu_data %>% 
+  mutate(home_prop = home_school / (home_school + state_school + private_school),
+         priv_prop = private_school / (home_school + state_school + private_school),
+         state_prop = state_school / (home_school + state_school + private_school)) %>%
+  select(-c(home_school, state_school, private_school, urban_pop))
+
+
+
+
+dist_matrix_all_prop <- edu_data_scale_prop %>% 
+  get_dist()
+
+dist_matrix_all_prop
+
+
+all_clusters_prop <-  dist_matrix_all_prop %>% 
+  hclust(method = "complete")
+
+all_dendo_prop <- all_clusters_prop %>% 
+  as.dendrogram() %>% 
+  set("labels_cex", 0.5)
+
+all_dendo_prop %>% 
+  plot()
+
+edu_clustered_all_prop <- edu_data_prop %>% 
+  mutate(school_cluster = cutree(all_clusters_prop, 3))
+
+
+edu_clustered_all_prop %>% 
+  ggplot(aes(priv_prop, state_prop, colour = as.factor(school_cluster))) +
+  geom_point()
+
+
+priv <- edu_clustered_all_prop %>% 
+  ggplot() +
+  geom_point(aes(school_cluster, priv_prop, colour = as.factor(school_cluster)))
+
+state <- edu_clustered_all_prop %>% 
+  ggplot() +
+  geom_point(aes(school_cluster, state_prop, colour = as.factor(school_cluster)))
+
+home <- edu_clustered_all_prop %>% 
+  ggplot() +
+  geom_point(aes(school_cluster, home_prop, colour = as.factor(school_cluster)))
+
+priv
+state
+home
+
+```
+

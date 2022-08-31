@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r, echo=FALSE}
+
+library(tidyverse)
+library(rpart)
+library(rpart.plot)
+library(modelr)
+library(caret)
+library(yardstick)
+library(ranger)
+library(janitor)
+library(GGally)
+library(ggfortify)
+library(splitstackshape)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(corrplot)
+library(broom)
+library(shiny)
+
+```
+
+#    You have been provided some customer data from a shopping centre. Do some exploratory analysis on the data. Comment on findings.
+
+```{r}
+
+customers <- read_csv("data/mall_customers.csv") %>% 
+  clean_names()
+
+head(customers)
+skimr::skim(customers)
+
+customers %>% 
+  ggplot() +
+  aes(age) +
+  geom_point(aes(y = spending_score_1_100), colour = "blue")
+
+# very clear drop in spending score around 40
+
+customers %>% 
+  ggplot() +
+  aes(gender) +
+  geom_jitter(aes(y = annual_income_k), colour = "dark green")
+
+customers %>% 
+  ggplot() +
+  aes(gender) +
+  geom_jitter(aes(y = spending_score_1_100), colour = "dark green")
+# 
+
+scaled_customers <- customers %>% 
+  column_to_rownames("customer_id") %>% 
+  mutate(across(where(is.numeric), scale)) %>% 
+  select(-gender, -age)
+
+```
+
+
+#    We are interested in creating a marketing campaign to target customers based on their spending score and annual income. Perform a k-means clustering to find if there are meaningful clusters in the data to target the customers.
+
+#    Perform k-means clustering and chose a value of k.
+
+```{r}
+
+fviz_nbclust(scaled_customers, kmeans, method = "silhouette", k.max = 25)
+
+# Silhouette likes 6 clusters, but upon plotting I chose 5 as cluster 6 I felt was not necessary.
+
+max_k <- 10
+
+k_clusters_customers <- tibble(k = 1:max_k) %>%
+  mutate(
+    kclust = map(k, ~ kmeans(scaled_customers, .x, nstart = 10)), 
+    tidied = map(kclust, tidy),
+    glanced = map(kclust, glance),
+    augmented = map(kclust, augment, scaled_customers)
+  )
+
+customer_clusterings <- k_clusters_customers %>% 
+  unnest(glanced)
+
+```
+
+
+#    Visualise the clustering for your chosen value of k.
+
+```{r}
+
+customer_clusterings %>% 
+  unnest(cols = augmented) %>% 
+  filter(k == 5) %>% 
+  ggplot() +
+  aes(annual_income_k, spending_score_1_100, colour = .cluster) +
+  geom_point()
+
+```
+
+
+#    Do you think the clustering seems a good fit for this data?
+
+I would say the clustering is an excellent fit for this data
+
+#    Comment on the attributes on one or two of the clusters (maybe even give them a label if you like - like in section 4.1 of the ‘Segmentation & clustering intro’ lesson).
+
+```{r}
+cluster_lab <- customer_clusterings %>%
+  filter(k == 5) %>% 
+  unnest(cols = augmented) %>% 
+  select(.cluster)
+
+customer_w_clusters <- customers %>% 
+  bind_cols(cluster_lab)
+
+customer_w_clusters %>% 
+  ggplot() +
+  aes(x = annual_income_k, y = spending_score_1_100, colour = .cluster) +
+  geom_point() 
+```
+
+Cluster 1 could be tight budgeted
+Cluster 2 could be average joes
+Cluster 3 could be spendthrifts
+Cluster 4 could be whales
+Cluster 5 could be squanderers
+
+Best option for targetting would be cluster 4, high income and free spending.
+Could target cluster 5, but this may be an ethical question, low income, high spending. 
+
