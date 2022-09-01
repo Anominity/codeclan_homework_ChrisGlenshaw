@@ -35,6 +35,9 @@ head(customers)
 skimr::skim(customers)
 
 customers %>% 
+  ggpairs()
+
+customers %>% 
   ggplot() +
   aes(age) +
   geom_point(aes(y = spending_score_1_100), colour = "blue")
@@ -66,7 +69,7 @@ scaled_customers <- customers %>%
 
 ```{r}
 
-fviz_nbclust(scaled_customers, kmeans, method = "silhouette", k.max = 25)
+fviz_nbclust(scaled_customers, kmeans, method = "silhouette", k.max = 10)
 
 # Silhouette likes 6 clusters, but upon plotting I chose 5 as cluster 6 I felt was not necessary.
 
@@ -129,4 +132,54 @@ Cluster 5 could be squanderers
 
 Best option for targetting would be cluster 4, high income and free spending.
 Could target cluster 5, but this may be an ethical question, low income, high spending. 
+
+```{r}
+
+scaled_customers_age <- customers %>% 
+  column_to_rownames("customer_id") %>% 
+  mutate(across(where(is.numeric), scale)) %>% 
+  select(-gender)
+
+fviz_nbclust(scaled_customers_age, kmeans, method = "silhouette", k.max = 10)
+
+# Silhouette likes 6 clusters, but upon plotting I chose 5 as cluster 6 I felt was not necessary.
+
+max_k <- 10
+
+k_clusters_customers_age <- tibble(k = 1:max_k) %>%
+  mutate(
+    kclust = map(k, ~ kmeans(scaled_customers_age, .x, nstart = 10)), 
+    tidied = map(kclust, tidy),
+    glanced = map(kclust, glance),
+    augmented = map(kclust, augment, scaled_customers_age)
+  )
+
+customer_clusterings_age <- k_clusters_customers_age %>% 
+  unnest(glanced)
+
+inc_sco <- customer_clusterings_age %>% 
+  unnest(cols = augmented) %>% 
+  filter(k == 6) %>% 
+  ggplot() +
+  aes(annual_income_k, spending_score_1_100, colour = .cluster) +
+  geom_point()
+
+age_inc <- customer_clusterings_age %>% 
+  unnest(cols = augmented) %>% 
+  filter(k == 6) %>% 
+  ggplot() +
+  aes(age, annual_income_k, colour = .cluster) +
+  geom_point()
+
+age_sco <- customer_clusterings_age %>% 
+  unnest(cols = augmented) %>% 
+  filter(k == 6) %>% 
+  ggplot() +
+  aes(age, spending_score_1_100, colour = .cluster) +
+  geom_point()
+
+inc_sco
+age_inc
+age_sco
+```
 
