@@ -1,0 +1,31 @@
+---
+title: "Meteors Continued, Again - PDA"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+    pdf_document: default
+---
+
+# MVP
+
+This is a mini homework for people doing the PDA. You are going to continue working on your week 2 weekend homework.
+
+Based on the mass and year, create a decision tree model of your meteorites data which predicts whether a meteorite was seen falling, or was discovered after its impact (fell/found). 
+
+First, you want to convert any character column to a factor. Next (and most importantly) split your dataset into training and testing datasets. Then create a decision tree with `rpart` and plot it using `rpart.plot`. Finally, test and add your predictions to your data, and create a confusion matrix.
+
+# PDA-specific Requirements
+
+## Outcomes covered
+
+From Programming for Data (J4YB 35):
+
+*4. Test programs for data analysis*
+
+- **4.2 Testing datasets**
+- **4.3 Training datasets**
+

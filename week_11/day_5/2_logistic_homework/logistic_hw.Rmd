@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+source(file = "librarys.R")
+```
+
+# Read in and clean names
+```{r}
+orange_juice <- read_csv("2_logistic_homework/data/orange_juice.csv") %>% 
+  clean_names()
+```
+
+# Exploring data
+```{r}
+
+orange_juice %>% 
+  head()
+
+orange_juice %>% 
+  distinct(store7)
+
+orange_juice %>% 
+  distinct(store)
+
+orange_juice %>% 
+  distinct(store_id)
+
+```
+
+# Test / Train
+```{r}
+# cleaning data for model
+
+alias_model <- glm()
+
+orange_juice %>% 
+  alias()
+```
+
