@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidytext)
+library(janeaustenr)
+library(textdata)
+```
+
+# 1 MVP
+
+Using the dataset austen_books() from the package janeaustenr:
+
+##    Find the most common words in both Pride & Prejudice and Sense & Sensibility.
+ 
+```{r, message=FALSE, warning=FALSE}
+
+titles <- austen_books() %>% 
+  distinct(book) %>% 
+  filter(book %in% c("Sense & Sensibility", "Pride & Prejudice")) %>% 
+  pull()
+
+books <- list(sensesensibility, prideprejudice)
+
+books <- books %>% 
+  map_chr(paste, collapse = " ")
+
+both_books_df <- tibble(
+  title = titles,
+  text = books
+) %>% 
+  unnest_tokens(word, text)
+
+both_books_df %>% 
+  group_by(title) %>% 
+  count(word, sort = TRUE) %>% 
+  slice_head(n = 5)
+
+```
+ 
+ 
+##    Find the most common words in both Pride & Prejudice and Sense & Sensibility, not including stop words.
+
+```{r, message=FALSE, warning=FALSE}
+
+words_top5_no_sw <- both_books_df %>%
+  anti_join(stop_words) %>% 
+  group_by(title) %>% 
+  count(word, sort = TRUE) %>% 
+  slice_head(n = 5)
+
+words_top5_no_sw
+```
+
+
+##    Find the most common sentiment words in both Pride & Prejudice and Sense & Sensibility.
+
+```{r, message=FALSE, warning=FALSE}
+
+words_top5_sentiment <- both_books_df %>%
+  anti_join(stop_words) %>% 
+  left_join(get_sentiments("bing")) %>% 
+  na.omit() %>% 
+  group_by(title, sentiment) %>% 
+  count(word, sort = TRUE) %>% 
+  slice_head(n = 5)
+
+words_top5_sentiment
+```
+
+
+# 2 Extension
+
+Taking your results above. Can you create a plot which visualises the differences between the books?
+
+```{r, message=FALSE, warning=FALSE}
+book_pride <- tibble(
+  text = prideprejudice,
+  sentence = seq_along(prideprejudice)
+) %>% 
+  unnest_tokens(word, text) %>% 
+  anti_join(stop_words)
+
+book_ss <- tibble(
+  text = sensesensibility,
+  sentence = seq_along(sensesensibility)
+) %>% 
+  unnest_tokens(word, text) %>% 
+  anti_join(stop_words)
+
+book_ss <- book_ss %>% 
+  mutate(book = "sense")
+
+book_pride <- book_pride %>% 
+  mutate(book = "pride")
+
+pride_and_sense <- book_pride %>% 
+  bind_rows(book_ss)
+
+sentiment_p_s <- pride_and_sense %>% 
+  left_join(get_sentiments("bing")) %>% 
+  drop_na() %>% 
+  mutate(sentiment = if_else(sentiment == "positive", 1, -1)) %>% 
+  group_by(book, sentence) %>% 
+  summarise(mean_sentiment = mean(sentiment)) %>% 
+  arrange(sentence)
+
+sentiment_p_s %>% 
+  ggplot() +
+  aes(sentence, mean_sentiment) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(aes(colour = book))
+
+```
+
+
+
