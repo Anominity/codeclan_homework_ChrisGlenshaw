@@ -1,10 +1,12 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 
 source(file = "c:/Users/anomi/OneDrive/Desktop/Repositories/codeclan_homework_ChrisGlenshaw/week_11/day_5/librarys.R")
 ```
@@ -41,8 +43,10 @@ orange_juice %>%
 ```{r}
 
 orange_juice_clean <- orange_juice %>% 
-  mutate(is_mm = as.logical(if_else(purchase == "MM", 1, 0)), .before = weekof_purchase) %>% 
-  select(-c(purchase, store, store7, list_price_diff, price_diff, sale_price_mm, sale_price_ch))
+  mutate(is_mm = as.logical(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase) %>% 
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch))
 
 alias_model <- glm(is_mm ~ .,
                    family = binomial(link = "logit"),
@@ -82,11 +86,13 @@ oj_train %>%
 ```{r}
 # Following cleaning methods from alias analysis, and setting factors to categorical fields.
 oj_train_clean <- oj_train %>% 
-  mutate(is_mm = as.logical(if_else(purchase == "MM", 1, 0)), .before = weekof_purchase,
+  mutate(is_mm = as.logical(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase,
          store_id = as.factor(store_id),
          weekof_purchase = as.factor(weekof_purchase - 226)
          ) %>% 
-  select(-c(purchase, store, store7, list_price_diff, price_diff, sale_price_mm, sale_price_ch))
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch))
 
 ```
 
@@ -128,9 +134,6 @@ glmulti_oj_fit_1_pair <- glmulti(
   family = binomial(link = "logit")
   )
 
-
-
-
 glmulti_oj_fit %>% 
   summary()
 
@@ -143,14 +146,17 @@ glmulti_oj_fit_1_pair %>%
 ```{r}
 # Clean test set
 oj_test_clean <- oj_test %>% 
-  mutate(is_mm = as.logical(if_else(purchase == "MM", 1, 0)), .before = weekof_purchase,
+  mutate(is_mm = as.logical(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase,
          store_id = as.factor(store_id),
          weekof_purchase = as.factor(weekof_purchase - 226)
          ) %>% 
-  select(-c(purchase, store, store7, list_price_diff, price_diff, sale_price_mm, sale_price_ch))
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch))
 
 # run generated model on test set
-oj_test_model_1p <- glm(is_mm ~ price_ch + price_mm + disc_ch + disc_mm + loyal_ch + disc_mm:disc_ch,
+oj_test_model_1p <- glm(is_mm ~ price_ch + price_mm +
+                          disc_ch + disc_mm + loyal_ch + disc_mm:disc_ch,
                      family = binomial(link = "logit"),
                      data = oj_test_clean)
 
@@ -234,18 +240,21 @@ auc(oj_test_roc)
 ```{r}
 # Clean full dataset
 oj_full_clean <- orange_juice %>% 
-  mutate(is_mm = as.factor(if_else(purchase == "MM", 1, 0)), .before = weekof_purchase,
+  mutate(is_mm = as.factor(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase,
          store_id = as.factor(store_id),
          weekof_purchase = as.factor(weekof_purchase - 226)
          ) %>% 
-  select(-c(purchase, store, store7, list_price_diff, price_diff, sale_price_mm, sale_price_ch))
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch))
 
 cv_10fold <- trainControl(method = "cv", 
                           number = 10,
                           savePredictions = TRUE)
 
 
-model_1p_kfold <- train(is_mm ~ price_ch + price_mm + disc_ch + disc_mm + loyal_ch + disc_mm:disc_ch,
+model_1p_kfold <- train(is_mm ~ price_ch + price_mm +
+                          disc_ch + disc_mm + loyal_ch + disc_mm:disc_ch,
                data = oj_full_clean,
                trControl = cv_10fold,
                method = "glm",
@@ -259,13 +268,16 @@ model_1p_kfold$resample
 ```{r}
 # Clean full dataset
 oj_full_clean <- orange_juice %>% 
-  mutate(is_mm = as.factor(if_else(purchase == "MM", 1, 0)), .before = weekof_purchase,
+  mutate(is_mm = as.factor(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase,
          store_id = as.factor(store_id),
          weekof_purchase = as.factor(weekof_purchase - 226)
          ) %>% 
-  select(-c(purchase, store, store7, list_price_diff, price_diff, sale_price_mm, sale_price_ch))
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch))
 
-model_0p_kfold <- train(is_mm ~ price_ch + price_mm + disc_ch + disc_mm + loyal_ch,
+model_0p_kfold <- train(is_mm ~ price_ch + price_mm +
+                          disc_ch + disc_mm + loyal_ch,
                data = oj_full_clean,
                trControl = cv_10fold,
                method = "glm",
@@ -295,6 +307,117 @@ classifier_data <- tibble(
   threshold = oj_test_1p_roc$thresholds,
   TPR_sensitivity = oj_test_1p_roc$sensitivities,
   TNR_specificity = oj_test_1p_roc$specificities)
+
+```
+
+# loyal_ch 
+```{r}
+# Following cleaning methods from alias analysis, and setting factors to categorical fields.
+oj_train_no_loyal_clean <- oj_train %>% 
+  mutate(is_mm = as.logical(if_else(
+    purchase == "MM", 1, 0)), .before = weekof_purchase,
+         store_id = as.factor(store_id),
+         weekof_purchase = as.factor(weekof_purchase - 226)
+         ) %>% 
+  select(-c(purchase, store, store7, list_price_diff,
+            price_diff, sale_price_mm, sale_price_ch, loyal_ch))
+
+glmulti_oj_no_loyal_no_pair_fit <- glmulti(
+  is_mm ~ ., 
+  data = oj_train_no_loyal_clean,
+  level = 1,          # 1 = main effects only 
+  method = "h",       # exhaustive search
+  crit = bic,         # criteria for model selection is BIC value (lower is better)
+  plotty = F,         # plot models as function runs
+  report = TRUE,      # do produce reports as function runs
+  confsetsize = 10,   # return best 10 solutions
+  fitfunction = glm,  # fit using the `glm` function
+  chunks = 4,         # use 4 processors
+  family = binomial(link = "logit")
+  )
+
+glmulti_oj_no_loyal_fit <- glmulti(
+  is_mm ~ 1+store_id+price_ch+price_mm+disc_ch+disc_mm, 
+  data = oj_train_no_loyal_clean,
+  level = 2,          # 2 = main effects only 
+  minsize = 6,        # no min size of model
+  maxsize = -1,       # -1 = no max size of model
+  method = "h",       # exhaustive search
+  marginality = TRUE,
+  crit = bic,         # criteria for model selection is BIC value (lower is better)
+  plotty = F,         # plot models as function runs
+  report = TRUE,      # do produce reports as function runs
+  confsetsize = 10,   # return best 10 solutions
+  fitfunction = glm,  # fit using the `glm` function
+  chunks = 4,         # use 4 processors
+  family = binomial(link = "logit")
+  )
+
+
+glmulti_oj_no_loyal_fit %>% 
+  summary()
+
+# run generated model on test set
+oj_no_loyal_model <- glm(is_mm~1 + store_id + price_ch + price_mm + disc_ch +
+                           disc_mm + disc_mm:price_ch,
+                     family = binomial(link = "logit"),
+                     data = oj_train_no_loyal_clean)
+
+oj_no_loyal_model %>% 
+  summary()
+
+# add predictions to test dataset
+oj_no_loyal_clean_pred <- oj_train_no_loyal_clean %>% 
+  add_predictions(oj_no_loyal_model, type = "response")
+
+# applying threshold
+oj_no_loyal_clean_pred_tf <- oj_no_loyal_clean_pred %>% 
+  mutate(pred_logical = as.factor(pred > prediction_threshold),
+         is_mm = as.factor(is_mm))
+
+# Generating confusion matrix
+oj_no_loyal_clean_pred_tf %>% 
+  conf_mat(trut = is_mm, estimate = pred_logical)
+
+# Creating roc object
+oj_no_loyal_roc <- oj_no_loyal_clean_pred_tf %>% 
+  roc(response = is_mm,
+      predictor = pred)
+
+auc(oj_test_roc)
+
+
+```
+
+```{r}
+
+oj_no_loyal_model_short <- glm(is_mm ~ 1 + store_id + price_mm + disc_ch,
+                     family = binomial(link = "logit"),
+                     data = oj_train_no_loyal_clean)
+
+oj_no_loyal_model_short %>% 
+  summary()
+
+# add predictions to test dataset
+oj_no_loyal_clean_short_pred <- oj_train_no_loyal_clean %>% 
+  add_predictions(oj_no_loyal_model_short, type = "response")
+
+# applying threshold
+oj_no_loyal_clean_short_pred_tf <- oj_no_loyal_clean_short_pred %>% 
+  mutate(pred_logical = as.factor(pred > prediction_threshold),
+         is_mm = as.factor(is_mm))
+
+# Generating confusion matrix
+oj_no_loyal_clean_short_pred_tf %>% 
+  conf_mat(trut = is_mm, estimate = pred_logical)
+
+# Creating roc object
+oj_no_loyal_roc <- oj_no_loyal_clean_short_pred_tf %>% 
+  roc(response = is_mm,
+      predictor = pred)
+
+auc(oj_no_loyal_roc)
+
 
 ```
 
